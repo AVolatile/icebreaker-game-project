@@ -3,7 +3,7 @@ services:
     name: ruckus-realtime
     runtime: node
     plan: starter
-    buildCommand: npm ci && npm run build:server
+    buildCommand: npm ci --include=dev && npm run build:server
     startCommand: npm run start:server
     healthCheckPath: /health
     envVars:
