@@ -18,13 +18,13 @@ export function HowItWorks() {
           {
             n: "01",
             title: "Put a room on the big screen.",
-            text: "Open Ruckus on a laptop, conference-room TV, or projector. Choose your game mix. Your room gets a five-character code and a QR code.",
+            text: "Open Ruckus on a laptop, conference-room TV, or projector. Choose a Ruckus Original, or make your own question board in Studio. Your room gets a five-character code and a QR code.",
             icon: "screen",
           },
           {
             n: "02",
             title: "Everyone makes an entrance.",
-            text: "Scan the QR on your phone. Pick a name and one of twenty alter egos. No download, no account, no asking IT for permission.",
+            text: "Scan the QR on your phone. Pick a name and one of twenty alter egos. No download, no account, just your browser.",
             icon: "scan",
           },
           {
@@ -51,12 +51,12 @@ export function HowItWorks() {
         ))}
       </section>
       <section className="section practical-note">
-        <h2>Same room? Same Wi-Fi.</h2>
+        <h2>A room can reach beyond the room.</h2>
         <p>
           For local play, your computer runs the server and phones join over the
-          same Wi-Fi. The lobby generates a LAN join link automatically. For
-          remote play, run the service on a public, WebSocket-capable host and
-          share your screen.
+          same Wi-Fi. The lobby generates a LAN join link automatically. The
+          public deployment lets phones join over Wi-Fi or cellular. Remote
+          hosts share the game screen on their existing video call.
         </p>
         <Link to="/resources" className="button outline">
           The host’s field guide <Icon name="arrow" />
@@ -145,7 +145,7 @@ export function Teams() {
                 [
                   "03",
                   "Make it internet-ready.",
-                  "Remote phones need the publicly hosted Node service. A local Wi-Fi address works only on that network.",
+                  "With the public app, phones join over Wi-Fi or cellular. Hosts share the stage screen on their existing video call.",
                 ],
               ]
             : [
@@ -173,6 +173,20 @@ export function Teams() {
             </article>
           ))}
         </div>
+      </section>
+      <section className="compact-cta">
+        <div>
+          <span className="eyebrow">MAKE IT YOUR TEAM’S GAME.</span>
+          <h2>Your company trivia. Their competitive streak.</h2>
+          <p>
+            Build a board for onboarding, a knowledge refresh, an internal
+            launch, or your next conference. Start with a template and bring
+            your own questions.
+          </p>
+        </div>
+        <Link className="button" to="/studio">
+          Open Ruckus Studio <Icon name="arrow" />
+        </Link>
       </section>
       <section className="demo-banner">
         <div>
@@ -224,7 +238,8 @@ export function Pricing() {
             "QR-code phone joining",
             "4, 8, or 12 demo players at a time",
             "Anonymous voting and live scoring",
-            "LAN play and a deployable Node service",
+            "Ruckus Studio with custom question boards",
+            "LAN play and a deployable internet multiplayer service",
           ].map((t) => (
             <li key={t}>
               <Icon name="check" />
@@ -274,7 +289,7 @@ export function Resources() {
           {
             n: "03",
             title: "The Wi-Fi check",
-            body: "Computer and phones need the same Wi-Fi for local play. Guest networks may block device-to-device access. If the QR doesn’t load, check the printed Phone URL in your terminal and set PUBLIC_JOIN_URL if necessary.",
+            body: "Computer and phones need the same Wi-Fi for local play. Guest networks may block device-to-device access. If the QR doesn’t load, check the printed Phone URL in your terminal and set PUBLIC_APP_URL if necessary.",
           },
           {
             n: "04",

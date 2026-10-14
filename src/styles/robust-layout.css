@@ -1,0 +1,269 @@
+/* Text-bearing flex/grid children must be allowed to shrink; decorations keep their own geometry. */
+.button {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.button > .icon {
+  flex-shrink: 0;
+}
+.hero-actions {
+  flex-wrap: wrap;
+}
+.section-heading > *,
+.site-header nav,
+.footer-top > *,
+.hero-copy,
+.game-card,
+.game-card-top > *,
+.game-card-bottom > *,
+.occasion,
+.setup-intro,
+.setup-form,
+.form-two-col > *,
+.preset,
+.game-check > span,
+.host-options > div,
+.host-options b,
+.distribution-row > b,
+.score-name,
+.submission-card,
+.submission-author > b,
+.vote-gallery > article,
+.board-card,
+.template-grid > article,
+.studio-workbench > *,
+.studio-board-meta > *,
+.studio-hero > *,
+.studio-editor-top > *,
+.studio-preview-pair > * {
+  min-width: 0;
+}
+.game-card h3,
+.occasion h3,
+.host-breadcrumb,
+.player-prompt,
+.round-prompt h1,
+.game-intro h1,
+.round-reveal h1,
+.score-name,
+.submission-card h3,
+.player-vote > b,
+.studio-preview-body h3 {
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.tag {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.distribution-row b {
+  flex: 0 1 38%;
+  max-width: 50%;
+  min-width: 0;
+}
+.distribution-track {
+  min-width: 20px;
+}
+.score-rank,
+.score-number,
+.score-delta,
+.movement {
+  flex-shrink: 0;
+}
+.host-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.host-options b {
+  overflow-wrap: anywhere;
+}
+.host-breadcrumb {
+  max-width: 55%;
+  line-height: 1.4;
+}
+.host-code {
+  flex-shrink: 0;
+}
+.host-header > .logo {
+  flex-shrink: 0;
+}
+.host-options > div {
+  min-width: 0;
+  line-height: 1.2;
+}
+.player-answer b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  flex: 1;
+}
+.player-answer > .icon {
+  flex-shrink: 0;
+}
+.player-answer.answer-4 {
+  background: #b7aff8;
+}
+.player-answer.answer-5 {
+  background: var(--orange);
+}
+.player-identity > b {
+  min-width: 0;
+}
+.player-round-heading > .tag {
+  max-width: calc(100% - 84px);
+}
+.studio-editor-page > .error-message {
+  max-width: 100%;
+}
+.confirm-modal {
+  width: min(100%, 500px);
+  min-width: 0;
+}
+.confirm-modal p {
+  overflow-wrap: anywhere;
+}
+.brand-icons {
+  flex-wrap: wrap;
+}
+.game-detail-hero > div,
+.type-specimen > div,
+.case-brand-links > a,
+.campaign-lines > div {
+  min-width: 0;
+}
+.game-detail-hero h1,
+.about-hero h1,
+.case-hero h1,
+.page-hero h1 {
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.hero-playground {
+  isolation: isolate;
+}
+.studio-hero-art {
+  min-width: 0;
+}
+.board-summary {
+  overflow-wrap: anywhere;
+}
+.board-summary > div > span {
+  min-width: 0;
+}
+.board-summary p {
+  font-size: 11px;
+}
+@media (max-width: 600px) {
+  .home-hero .hero-copy h1 {
+    font-size: clamp(52px, 13.8vw, 82px);
+  }
+  .home-hero .hero-fine {
+    flex-wrap: wrap;
+  }
+  .host-options > div {
+    font-size: clamp(15px, 3vw, 21px);
+  }
+  .distribution-row > b {
+    flex-basis: 45%;
+    max-width: 54%;
+  }
+  .studio-preview-answers > div,
+  .studio-preview-answers > button {
+    overflow-wrap: anywhere;
+  }
+  .footer-top .button {
+    width: auto;
+  }
+}
+@media (min-width: 900px) {
+  .host-round:has(.host-options > div:nth-child(5)) .host-options > div {
+    padding: 16px;
+    min-height: 72px;
+  }
+  .host-round:has(.host-options > div:nth-child(5)) .round-prompt h1 {
+    font-size: clamp(37px, 4vw, 65px);
+    margin-bottom: 25px;
+  }
+  .host-round:has(.host-options > div:nth-child(5)) .round-response {
+    margin-top: 18px;
+  }
+}
+/* Flexible brand specimens retain their proportions without imposing a minimum column width. */
+.identity-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.wordmark-panel,
+.symbol-panel,
+.case-screen-grid > div {
+  min-width: 0;
+}
+.case-screen-grid h2 {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .identity-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wordmark-panel .logo,
+  .case-brand-links .logo {
+    font-size: clamp(60px, 18vw, 94px);
+  }
+}
+@media (max-width: 768px) {
+  .question-rail nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 240px;
+    overflow-x: visible;
+    overflow-y: auto;
+  }
+  .question-rail nav > button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+h1,
+h2,
+h3 {
+  overflow-wrap: anywhere;
+}
+.discovery-tools {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 20px 0 32px;
+}
+.discovery-tools label {
+  display: grid;
+  gap: 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.discovery-tools select {
+  min-width: 190px;
+  padding: 14px;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+}
+@media (max-width: 430px) {
+  .discovery-tools {
+    gap: 14px;
+  }
+  .discovery-tools label,
+  .discovery-tools select {
+    min-width: 0;
+    width: 100%;
+  }
+}
+.studio-preview-answers > div > b,
+.studio-preview-answers > button > b {
+  min-width: 0;
+  flex: 1;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}

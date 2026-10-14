@@ -6,6 +6,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLocation } from "react-router-dom";
+import type { CustomBoard } from "../../shared/boards";
+import { realtimeUrl } from "./runtime";
 import { io, type Socket } from "socket.io-client";
 import type {
   ClientEvents,
@@ -17,18 +20,25 @@ import type {
   ServerEvents,
   Settings,
 } from "../../shared/types";
-const socket: Socket<ServerEvents, ClientEvents> = io({
-  autoConnect: false,
-  reconnection: true,
-  reconnectionDelay: 700,
-});
+const socket: Socket<ServerEvents, ClientEvents> = io(
+  import.meta.env.VITE_REALTIME_URL?.trim() || undefined,
+  {
+    autoConnect: false,
+    reconnection: true,
+    reconnectionDelay: 700,
+  },
+);
 interface PartyContext {
   room: RoomView | null;
   identity: Identity | null;
   connected: boolean;
   error: string;
   clearError: () => void;
-  create: (settings: Settings, demo?: boolean) => Promise<Reply>;
+  create: (
+    settings: Settings,
+    demo?: boolean,
+    board?: CustomBoard,
+  ) => Promise<Reply>;
   join: (code: string, name: string, avatar: number) => Promise<Reply>;
   resume: (identity: Identity) => Promise<Reply>;
   action: (
@@ -54,6 +64,8 @@ export function PartyProvider({ children }: { children: ReactNode }) {
     [connected, setConnected] = useState(false),
     [error, setError] = useState(""),
     [reactions, setReactions] = useState<PartyContext["reactions"]>([]);
+  const location = useLocation();
+  const liveRoute = /^\/(host|join|room)(\/|$)/.test(location.pathname);
   const identityRef = useRef(identity);
   const reactionTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   function accept(reply: Reply) {
@@ -73,21 +85,18 @@ export function PartyProvider({ children }: { children: ReactNode }) {
   }
   function resume(saved: Identity) {
     return new Promise<Reply>((resolve) =>
-      socket
-        .timeout(7000)
-        .emit("room:resume", saved, (err, reply) =>
-          resolve(
-            accept(
-              err
-                ? {
-                    ok: false,
-                    error:
-                      "We couldn’t reach the stage. Check your connection.",
-                  }
-                : reply,
-            ),
+      socket.timeout(7000).emit("room:resume", saved, (err, reply) =>
+        resolve(
+          accept(
+            err
+              ? {
+                  ok: false,
+                  error: "We couldn’t reach the stage. Check your connection.",
+                }
+              : reply,
           ),
         ),
+      ),
     );
   }
   useEffect(() => {
@@ -132,7 +141,7 @@ export function PartyProvider({ children }: { children: ReactNode }) {
     socket.on("room:removed", onRemoved);
     socket.on("room:reaction", onReaction);
     socket.on("connect_error", onDisconnect);
-    socket.connect();
+
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
@@ -144,11 +153,58 @@ export function PartyProvider({ children }: { children: ReactNode }) {
       socket.disconnect();
     };
   }, []);
-  const create = (settings: Settings, demo = false) =>
-    new Promise<Reply>((resolve) =>
+  useEffect(() => {
+    if (liveRoute) {
+      try {
+        realtimeUrl();
+        socket.connect();
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Check the live-stage URL.");
+      }
+    } else socket.disconnect();
+  }, [liveRoute]);
+  async function ensureConnection() {
+    realtimeUrl();
+    if (socket.connected) return;
+    await new Promise<void>((resolve, reject) => {
+      const done = () => {
+        clearTimeout(timer);
+        socket.off("connect", done);
+        resolve();
+      };
+      const timer = setTimeout(() => {
+        socket.off("connect", done);
+        socket.disconnect();
+        reject(
+          new Error(
+            "The live stage is unavailable. Wait a moment and try again.",
+          ),
+        );
+      }, 10000);
+      socket.once("connect", done);
+      socket.connect();
+    });
+  }
+  const create = async (
+    settings: Settings,
+    demo = false,
+    board?: CustomBoard,
+  ) => {
+    try {
+      await ensureConnection();
+    } catch (error) {
+      return accept({
+        ok: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Couldn’t reach the live stage.",
+      });
+    }
+    return new Promise<Reply>((resolve) =>
       socket
         .timeout(7000)
-        .emit("room:create", { settings, demo }, (err, reply) =>
+        .emit("room:create", { settings, demo, board }, (err, reply) =>
           resolve(
             accept(
               err
@@ -162,6 +218,7 @@ export function PartyProvider({ children }: { children: ReactNode }) {
           ),
         ),
     );
+  };
   const join = (code: string, name: string, avatar: number) =>
     new Promise<Reply>((resolve) =>
       socket
@@ -172,7 +229,8 @@ export function PartyProvider({ children }: { children: ReactNode }) {
               err
                 ? {
                     ok: false,
-                    error: "Couldn’t connect. Check Wi-Fi and try again.",
+                    error:
+                      "Couldn’t connect. Check your network and try again.",
                   }
                 : reply,
             ),

@@ -120,7 +120,17 @@ export function Tag({
   color?: string;
 }) {
   return (
-    <span className="tag" style={color ? { background: color } : undefined}>
+    <span
+      className="tag"
+      style={
+        color
+          ? {
+              background: color,
+              color: color.toLowerCase() === "#2548f4" ? "#f9f7ed" : "#191a24",
+            }
+          : undefined
+      }
+    >
       {children}
     </span>
   );

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { gameById } from "../../shared/catalog";
+import { gameForRoom } from "../../shared/catalog";
 import type { RoomView, Stroke } from "../../shared/types";
 import { useParty } from "../lib/party";
 import { Avatar, Icon } from "./Visuals";
@@ -11,7 +11,7 @@ export function PlayerInput({ room }: { room: RoomView }) {
     [strokes, setStrokes] = useState<Stroke[]>([]),
     [busy, setBusy] = useState(false),
     [tried, setTried] = useState(false);
-  const game = gameById(room.settings.playlist[room.gameIndex]);
+  const game = gameForRoom(room);
   const disabled = busy || room.paused || !party.connected;
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -81,7 +81,7 @@ export function PlayerInput({ room }: { room: RoomView }) {
               setBusy(false);
             }}
           >
-            <span>{"ABCD"[i]}</span>
+            <span>{"ABCDEF"[i]}</span>
             <b>{a}</b>
             <Icon name="arrow" />
           </button>

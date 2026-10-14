@@ -1,0 +1,14 @@
+{
+  "frontend": "http://localhost:4313",
+  "backend": "http://localhost:4314",
+  "checks": [
+    "separate backend health",
+    "polling accepts configured origin and rejects untrusted origin",
+    "WebSocket origin rejection",
+    "polling-only connection",
+    "deep links and marketing/Studio avoid sockets",
+    "independent host/phone origins connect, refresh, join, start and submit",
+    "join URL uses frontend, payload has no answer key",
+    "no browser runtime errors"
+  ]
+}

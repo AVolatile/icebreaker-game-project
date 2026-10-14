@@ -1,3 +1,4 @@
+import type { CustomBoard } from "./boards.js";
 export const GAME_IDS = [
   "hotwire",
   "room-temperature",
@@ -66,13 +67,38 @@ export interface Submission {
   votes: number;
   author?: string;
 }
+export interface BoardSessionSummary {
+  questions: {
+    number: number;
+    prompt: string;
+    respondents: number;
+    correct: number;
+    timedOut: number;
+    scored: boolean;
+  }[];
+  correctness: number | null;
+  hardestQuestion: number | null;
+  fastest: { name: string; ms: number } | null;
+}
 export interface Prompt {
   title: string;
   options?: string[];
   scene?: number;
   explanation?: string;
+  questionType?: "multiple-choice" | "true-false" | "poll";
+  scoreMode?: "casual" | "quick-draw" | "no-score";
 }
 export interface RoomView {
+  board?: {
+    title: string;
+    description: string;
+    color: string;
+    questionCount: number;
+    scoring: boolean;
+    leaderboardFrequency: string;
+  };
+  summary?: BoardSessionSummary;
+  showLeaderboard?: boolean;
   code: string;
   phase: Phase;
   settings: Settings;
@@ -127,7 +153,7 @@ export interface Reply {
 }
 export interface ClientEvents {
   "room:create": (
-    data: { settings: Settings; demo?: boolean },
+    data: { settings: Settings; demo?: boolean; board?: CustomBoard },
     ack: (reply: Reply) => void,
   ) => void;
   "room:join": (

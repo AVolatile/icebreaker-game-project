@@ -8,14 +8,19 @@
   },
   "scripts": {
     "dev": "tsx watch server/index.ts",
-    "build": "npm run typecheck && vite build && tsc -p tsconfig.server.json",
+    "build": "npm run build:client && npm run build:server",
     "start": "node dist-server/server/index.js",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json",
     "lint": "eslint .",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
     "format": "prettier --write src server shared tests *.ts *.js *.json docs/*.md README.md portfolio-assets/*.md",
-    "assets": "python3 scripts/generate-assets.py && python3 scripts/generate-emails.py && .venv/bin/python scripts/refine-brand-assets.py"
+    "assets": "python3 scripts/generate-assets.py && python3 scripts/generate-emails.py && .venv/bin/python scripts/refine-brand-assets.py",
+    "dev:client": "vite --host 0.0.0.0",
+    "dev:server": "REALTIME_ONLY=true tsx watch server/index.ts",
+    "build:client": "node scripts/validate-public-env.mjs && tsc --noEmit && vite build",
+    "build:server": "tsc --noEmit -p tsconfig.server.json && tsc -p tsconfig.server.json",
+    "start:server": "REALTIME_ONLY=true node dist-server/server/index.js"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

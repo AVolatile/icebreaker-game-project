@@ -1,3 +1,4 @@
+import { TOPICS } from "./content/topics.js";
 import type { GameInfo, Settings } from "./types.js";
 export const GAMES: GameInfo[] = [
   {
@@ -91,6 +92,11 @@ export const DEFAULT_SETTINGS: Settings = {
   autoAdvance: true,
 };
 export const PACKS = [
+  ...Object.entries(TOPICS)
+    .filter(
+      ([id]) => !["food", "travel", "weird", "internet", "screen"].includes(id),
+    )
+    .map(([id, name]) => ({ id, name })),
   { id: "mixed", name: "Mixed signals" },
   { id: "work", name: "Out of office" },
   { id: "food", name: "Snack opinions" },
@@ -144,3 +150,16 @@ export const AVATAR_COLORS = [
   "#a9d9f6",
 ];
 export const REACTIONS = ["😂", "🔥", "👏", "🤯", "👀"];
+
+export function gameForRoom(room: import("./types.js").RoomView): GameInfo {
+  const game = gameById(room.settings.playlist[room.gameIndex]);
+  return room.board
+    ? {
+        ...game,
+        name: room.board.title,
+        short: "Your questions. Their competitive side.",
+        color: room.board.color,
+        rule: "Read the question. Tap your answer. Let the room find its champion.",
+      }
+    : game;
+}

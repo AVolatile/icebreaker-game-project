@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import { networkInterfaces } from "node:os";
 import path from "node:path";
 import { Server } from "socket.io";
+import { validateBoard, boardSchema } from "../shared/boards.js";
+import { allowedOrigins, getPublicJoinUrl, publicAppOrigin } from "./config.js";
 import { REACTIONS } from "../shared/catalog.js";
 import type {
   ClientEvents,
@@ -25,16 +27,33 @@ import { z } from "zod";
 const app = express();
 const http = createServer(app);
 const port = Number(process.env.PORT) || 4310;
-const origins = (process.env.ALLOWED_ORIGINS ?? "").split(",").filter(Boolean);
+const origins = allowedOrigins();
+publicAppOrigin();
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.REALTIME_ONLY === "true" &&
+  !origins.length
+)
+  throw new Error("CLIENT_ORIGIN is required for public realtime hosting.");
 const io = new Server<ClientEvents, ServerEvents>(http, {
-  maxHttpBufferSize: 150_000,
+  maxHttpBufferSize: 300_000,
+  cors: {
+    origin: (origin, callback) =>
+      callback(null, !origin || origins.includes(origin)),
+    methods: ["GET", "POST"],
+  },
   serveClient: false,
   allowRequest: (req, cb) => {
     const origin = req.headers.origin;
     if (!origin) return cb(null, true);
     try {
       const url = new URL(origin);
-      cb(null, origins.includes(origin) || url.host === req.headers.host);
+      cb(
+        null,
+        origins.includes(origin) ||
+          (process.env.REALTIME_ONLY !== "true" &&
+            url.host === req.headers.host),
+      );
     } catch {
       cb(null, false);
     }
@@ -53,7 +72,7 @@ app.use((_req, res, next) => {
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   next();
 });
-app.get("/api/health", (_req, res) =>
+app.get(["/api/health", "/health"], (_req, res) =>
   res.json({ status: "ok", service: "ruckus", rooms: rooms.size }),
 );
 function broadcast(room: Room) {
@@ -108,25 +127,32 @@ io.on("connection", (socket) => {
       if (rooms.size >= 500)
         throw new Error("All stages are occupied. Try again shortly.");
       const parsed = z
-        .object({ settings: settingsSchema, demo: z.boolean().optional() })
+        .object({
+          settings: settingsSchema,
+          demo: z.boolean().optional(),
+          board: boardSchema.optional(),
+        })
         .parse(data);
       let code = makeCode();
       while (rooms.has(code)) code = makeCode();
-      const requestHost = socket.handshake.headers.host ?? `localhost:${port}`;
-      const local =
-        requestHost.startsWith("localhost:") ||
-        requestHost.startsWith("127.0.0.1:");
-      const protocol = socket.handshake.headers.origin?.startsWith("https:")
-        ? "https"
-        : "http";
-      const base =
-        process.env.PUBLIC_JOIN_URL ??
-        (local && addresses[0]
-          ? `http://${addresses[0]}:${port}`
-          : `${protocol}://${requestHost}`);
-      const joinUrl = new URL(`/join?room=${code}`, base).toString();
-      const room = new Room(code, parsed.settings, joinUrl, () =>
-        broadcast(room),
+      const board = parsed.board ? validateBoard(parsed.board) : undefined;
+      const joinUrl = getPublicJoinUrl(
+        code,
+        {
+          host: socket.handshake.headers.host ?? `localhost:${port}`,
+          origin: socket.handshake.headers.origin,
+        },
+        port,
+      );
+      const settings = board
+        ? { ...parsed.settings, playlist: ["hotwire" as const], rounds: 1 }
+        : parsed.settings;
+      const room = new Room(
+        code,
+        settings,
+        joinUrl,
+        () => broadcast(room),
+        board,
       );
       rooms.set(code, room);
       const identity: Identity = { code, token: room.hostToken, role: "host" };
@@ -297,7 +323,14 @@ const cleanup = setInterval(() => {
   }
 }, 30000);
 cleanup.unref();
-if (process.env.NODE_ENV === "production" || process.argv[1]?.endsWith(".js")) {
+if (process.env.REALTIME_ONLY === "true") {
+  app.get("/", (_req, res) =>
+    res.json({ service: "ruckus-realtime", status: "ok" }),
+  );
+} else if (
+  process.env.NODE_ENV === "production" ||
+  process.argv[1]?.endsWith(".js")
+) {
   app.use(express.static(path.resolve("dist"), { maxAge: "1h" }));
   app.get("*", (_req, res) => res.sendFile(path.resolve("dist/index.html")));
 } else {

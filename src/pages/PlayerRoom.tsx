@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { gameById, REACTIONS } from "../../shared/catalog";
+import { gameById, gameForRoom, REACTIONS } from "../../shared/catalog";
 import { useParty } from "../lib/party";
 import { Avatar, Confetti, Icon, Logo, Tag } from "../components/Visuals";
 import { Timer, Scoreboard } from "../components/RoomParts";
@@ -26,7 +26,7 @@ export function PlayerRoom() {
       </div>
     );
   const player = room.players.find((p) => p.id === room.you);
-  const game = gameById(room.settings.playlist[room.gameIndex]);
+  const game = gameForRoom(room);
   if (!player) return null;
   const rank =
     [...room.players]
@@ -54,7 +54,13 @@ export function PlayerRoom() {
         <Avatar id={player.avatar} size={42} />
         <b>{player.name}</b>
         <span>
-          #{rank} <strong>{player.score.toLocaleString()}</strong> pts
+          {room.board?.scoring === false ? (
+            "JUST HERE TO PLAY"
+          ) : (
+            <>
+              #{rank} <strong>{player.score.toLocaleString()}</strong> pts
+            </>
+          )}
         </span>
       </div>
       <main className="player-main">
@@ -135,7 +141,13 @@ export function PlayerRoom() {
             <Tag color={game.color}>THE REVEAL</Tag>
             <Avatar id={player.avatar} size={125} />
             <h1>
-              {player.delta > 0 ? `+${player.delta}` : "Fresh round ahead."}
+              {room.prompt?.questionType === "poll"
+                ? "Opinion delivered."
+                : room.prompt?.scoreMode === "no-score"
+                  ? "Just here to play."
+                  : player.delta > 0
+                    ? `+${player.delta}`
+                    : "Fresh round ahead."}
             </h1>
             <p>
               {player.delta > 0
@@ -177,9 +189,17 @@ export function PlayerRoom() {
             {rank === 1 && <Confetti />}
             <Tag color="#f6ed51">THAT WAS A GOOD RUCKUS.</Tag>
             <Avatar id={player.avatar} size={150} />
-            <h1>{rank === 1 ? "Room royalty." : `A very good #${rank}.`}</h1>
+            <h1>
+              {room.board?.scoring === false
+                ? "Great company. Strong opinions."
+                : rank === 1
+                  ? "Room royalty."
+                  : `A very good #${rank}.`}
+            </h1>
             <p>
-              {player.score.toLocaleString()} points. Great company.
+              {room.board?.scoring === false
+                ? "Every opinion counted."
+                : `${player.score.toLocaleString()} points. Great company.`}
               <br />
               The host can start a rematch.
             </p>

@@ -7,6 +7,18 @@ export function Layout() {
   useEffect(() => {
     setOpen(false);
     window.scrollTo(0, 0);
+    const publicUrl = import.meta.env.VITE_PUBLIC_APP_URL;
+    if (publicUrl) {
+      let canonical = document.querySelector<HTMLLinkElement>(
+        'link[rel="canonical"]',
+      );
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.rel = "canonical";
+        document.head.append(canonical);
+      }
+      canonical.href = new URL(location.pathname, publicUrl).href;
+    }
   }, [location.pathname]);
   return (
     <>
@@ -28,7 +40,7 @@ export function Layout() {
         <nav className={open ? "open" : ""} aria-label="Main navigation">
           <NavLink to="/games">The games</NavLink>
           <NavLink to="/how-it-works">How it works</NavLink>
-          <NavLink to="/for-teams">For your people</NavLink>
+          <NavLink to="/studio">Build a board</NavLink>
           <NavLink to="/join" className="nav-join">
             Join a room <span>↗</span>
           </NavLink>
@@ -57,6 +69,7 @@ export function Layout() {
         <div className="footer-links">
           <div>
             <Link to="/games">The games</Link>
+            <Link to="/studio">Ruckus Studio</Link>
             <Link to="/remote">Remote play</Link>
             <Link to="/pricing">Pricing</Link>
             <Link to="/resources">Host’s field guide</Link>

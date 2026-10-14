@@ -660,6 +660,17 @@ kbd {
   line-height: 0.98;
   letter-spacing: -0.04em;
 }
+@media (min-width: 601px) {
+  .home-hero .no-download {
+    top: 44px;
+    right: 14px;
+  }
+}
+@media (min-width: 601px) and (max-width: 850px) {
+  .home-hero .no-download {
+    right: 26px;
+  }
+}
 .no-download > .star {
   position: absolute;
   width: 24px;

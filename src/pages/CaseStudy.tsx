@@ -125,9 +125,9 @@ export function CaseStudy() {
           </div>
         </div>
         <p className="technical-note">
-          React · TypeScript · Vite middleware · Express · Socket.IO · Zod · SVG
-          drawing · QR generation. One Node service for frontend and
-          multiplayer.
+          React · TypeScript · Express · Socket.IO · Zod · SVG drawing · QR
+          generation. One service in local development; Netlify frontend and a
+          persistent Node realtime service in production.
         </p>
       </section>
       <section className="section">
@@ -225,6 +225,53 @@ export function CaseStudy() {
             </p>
           </div>
         </div>
+      </section>
+      <section className="section case-studio">
+        <span className="eyebrow">
+          PHASE 2 / FROM GAME LIBRARY TO GAME PLATFORM
+        </span>
+        <div className="section-heading">
+          <h2>
+            Now the room
+            <br />
+            writes the questions.
+          </h2>
+          <p>
+            Phase one established six Originals and a live host/phone ecosystem.
+            Studio extends the same engine with locally saved question boards,
+            an accessible answer editor, live previews, validated JSON/CSV
+            transfer, and server-scored custom sessions.
+          </p>
+        </div>
+        <div className="brand-principles">
+          <div>
+            <h3>A creator’s seat</h3>
+            <p>
+              Question rails, correct-answer marking, timers, scoring, and
+              previews of both screens. Browser storage sits behind a repository
+              interface for a future shared library.
+            </p>
+          </div>
+          <div>
+            <h3>A protected game snapshot</h3>
+            <p>
+              Launching sends a validated board to the server. Phones receive
+              only the current question and choices. Answer truth is stripped
+              from the live payload until reveal.
+            </p>
+          </div>
+          <div>
+            <h3>A public topology</h3>
+            <p>
+              Netlify hosts the frontend. A persistent Node service runs
+              Socket.IO. Public join links point to the frontend, with
+              configurable secure realtime connections behind it.
+            </p>
+          </div>
+        </div>
+        <Link to="/studio" className="button">
+          Try the creator workflow <Icon name="arrow" />
+        </Link>
       </section>
       <section className="case-disclaimer">
         <p>

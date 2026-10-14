@@ -1,18 +1,17 @@
+import { TOPICS } from "../shared/content/library.js";
 import { z } from "zod";
 import { GAME_IDS } from "../shared/types.js";
 export const settingsSchema = z.object({
   playlist: z.array(z.enum(GAME_IDS)).min(1).max(6),
   rounds: z.number().int().min(1).max(5),
   pace: z.enum(["quick", "normal", "relaxed"]),
-  pack: z.enum([
-    "mixed",
-    "work",
-    "food",
-    "travel",
-    "weird",
-    "internet",
-    "screen",
-  ]),
+  pack: z
+    .string()
+    .refine(
+      (value) =>
+        value === "mixed" || value === "work" || Object.hasOwn(TOPICS, value),
+      "Choose a supported content pack.",
+    ),
   lateJoins: z.boolean(),
   reactions: z.boolean(),
   autoAdvance: z.boolean(),
@@ -55,7 +54,7 @@ const stroke = z.object({
     .max(800),
 });
 export const inputSchema = z.union([
-  z.object({ choice: z.number().int().min(0).max(3) }),
+  z.object({ choice: z.number().int().min(0).max(5) }),
   z.object({
     text: z
       .string()

@@ -52,3 +52,22 @@ SVGs scale to print or digital sizes. Rasterize in a design tool at the required
 - Final awards and confetti celebrate actual session data.
 
 Record only what the build supports. State plainly that Ruckus is a self-initiated fictional startup concept with a functioning multiplayer prototype.
+
+## Studio expansion
+
+The original `cover-1280x960.png` is preserved. Add the creator-to-live sequence as a project-detail gallery rather than crowding the existing cover.
+
+| Capture                      | Route / action                    | Ready artifact                       |
+| ---------------------------- | --------------------------------- | ------------------------------------ |
+| Studio library               | `/studio`                         | `studio/library.png`                 |
+| Custom question editor       | copy starter → edit               | `studio/editor.png`                  |
+| Presenter + phone preview    | editor → Preview → Preview reveal | `studio/presenter-phone-preview.png` |
+| Custom lobby + QR            | Play this board → add bots        | `studio/live-lobby.png`              |
+| Live custom question         | start → We’re ready               | `studio/live-custom-question.png`    |
+| Phone custom answer          | scan / join live room             | `studio/live-phone-answer.png`       |
+| Custom reveal                | close round                       | `studio/live-reveal.png`             |
+| Session scoreboard + summary | finish board                      | `studio/session-results.png`         |
+
+`node scripts/expansion-qa.mjs` recreates the Studio sequence with real local rooms and phone browser contexts. Screenshots contain real demo participants and session data. `docs/qa/avatar-contact-sheet.png` and `caption-contact-sheet.png` are private development audits; keep them out of public product navigation. Maximum-length stress captures demonstrate validation/layout behavior and are QA evidence, not recommended hero portfolio imagery.
+
+The expanded story proves brand design, host/player product design, six game mechanics, accessible frontend engineering, multi-device real-time state, phone drawing, a creator ecosystem and split production architecture. Describe deployment as ready until both public services and physical internet joining have actually been verified.

@@ -21,6 +21,20 @@ import {
 import { Brand } from "./pages/Brand";
 import { Campaign } from "./pages/Campaign";
 import { CaseStudy } from "./pages/CaseStudy";
+const StudioLibrary = React.lazy(() => import("./studio/StudioLibrary"));
+const StudioEditor = React.lazy(() => import("./studio/StudioEditor"));
+const StudioPreview = React.lazy(() => import("./studio/StudioPreview"));
+const studio = (element: React.ReactNode) => (
+  <React.Suspense
+    fallback={
+      <section className="page-hero">
+        <p role="status">Opening the creative seat…</p>
+      </section>
+    }
+  >
+    {element}
+  </React.Suspense>
+);
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { failed: boolean }
@@ -53,6 +67,20 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<Home />} />
+              <Route path="studio" element={studio(<StudioLibrary />)} />
+              <Route path="studio/boards" element={studio(<StudioLibrary />)} />
+              <Route
+                path="studio/boards/new"
+                element={studio(<StudioEditor />)}
+              />
+              <Route
+                path="studio/boards/:id"
+                element={studio(<StudioEditor />)}
+              />
+              <Route
+                path="studio/boards/:id/preview"
+                element={studio(<StudioPreview />)}
+              />
               <Route path="host" element={<HostSetup />} />
               <Route path="games" element={<Games />} />
               <Route path="games/:slug" element={<GameDetail />} />

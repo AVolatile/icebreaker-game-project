@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { GAMES, gameById } from "../../shared/catalog";
 import { GameCard } from "../components/GameCard";
 import { Icon, Tag } from "../components/Visuals";
@@ -42,7 +42,10 @@ const samples: Record<string, { title: string; body: string[] }> = {
   },
 };
 export function Games() {
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("all"),
+    [energy, setEnergy] = useState("all"),
+    [time, setTime] = useState("all");
+  const navigate = useNavigate();
   const filters = [
     ["all", "The whole party"],
     ["quick", "5-minute fix"],
@@ -52,14 +55,16 @@ export function Games() {
   ];
   const visible = GAMES.filter(
     (g) =>
-      filter === "all" ||
-      (filter === "quick" && g.minutes <= 4) ||
-      g.category === filter,
+      (filter === "all" ||
+        (filter === "quick" && g.minutes <= 4) ||
+        g.category === filter) &&
+      (energy === "all" || g.energy === energy) &&
+      (time === "all" || g.minutes <= Number(time)),
   );
   return (
     <>
       <section className="page-hero">
-        <Tag>SIX GAMES. SIX WAYS TO MAKE A SCENE.</Tag>
+        <Tag>RUCKUS ORIGINALS / SIX WAYS TO MAKE A SCENE.</Tag>
         <h1>
           Find your
           <br />
@@ -84,11 +89,68 @@ export function Games() {
             </button>
           ))}
         </div>
+        <div className="discovery-tools">
+          <label>
+            Room energy
+            <select value={energy} onChange={(e) => setEnergy(e.target.value)}>
+              <option value="all">Every energy</option>
+              {GAMES.map((g) => (
+                <option key={g.id}>{g.energy}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Time to play
+            <select value={time} onChange={(e) => setTime(e.target.value)}>
+              <option value="all">Any length</option>
+              <option value="4">About 4 minutes</option>
+              <option value="6">Up to 6 minutes</option>
+            </select>
+          </label>
+          <button
+            className="button outline"
+            disabled={!visible.length}
+            onClick={() =>
+              navigate(
+                `/games/${visible[Math.floor(Math.random() * visible.length)].id}`,
+              )
+            }
+          >
+            Surprise me <Icon name="asterisk" />
+          </button>
+        </div>
+        {!visible.length && (
+          <div className="studio-empty">
+            <p>No games match this mix. Try another energy or time.</p>
+            <button
+              className="button"
+              onClick={() => {
+                setFilter("all");
+                setEnergy("all");
+                setTime("all");
+              }}
+            >
+              Show the whole party
+            </button>
+          </div>
+        )}
         <div className="game-grid">
           {visible.map((g) => (
             <GameCard key={g.id} game={g} index={GAMES.indexOf(g)} />
           ))}
         </div>
+      </section>
+      <section className="compact-cta">
+        <div>
+          <span className="eyebrow">YOUR BOARDS + CUSTOM TEMPLATES</span>
+          <h2>Make the questions your own.</h2>
+          <p>
+            Ruckus Studio turns your inside knowledge into live multiplayer.
+          </p>
+        </div>
+        <Link className="button" to="/studio">
+          Build a board <Icon name="arrow" />
+        </Link>
       </section>
       <section className="compact-cta">
         <h2>Can’t pick? Make a mix.</h2>

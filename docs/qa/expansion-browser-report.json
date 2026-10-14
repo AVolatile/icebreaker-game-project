@@ -1,0 +1,71 @@
+{
+  "overflows": [],
+  "accessibility": [
+    {
+      "label": "/",
+      "violations": []
+    },
+    {
+      "label": "/games",
+      "violations": []
+    },
+    {
+      "label": "/for-teams",
+      "violations": []
+    },
+    {
+      "label": "/brand",
+      "violations": []
+    },
+    {
+      "label": "/campaign",
+      "violations": []
+    },
+    {
+      "label": "/case-study",
+      "violations": []
+    },
+    {
+      "label": "Studio library",
+      "violations": []
+    },
+    {
+      "label": "Studio editor",
+      "violations": []
+    },
+    {
+      "label": "Studio preview",
+      "violations": []
+    },
+    {
+      "label": "Custom live host",
+      "violations": []
+    },
+    {
+      "label": "Custom phone",
+      "violations": []
+    },
+    {
+      "label": "Custom final summary",
+      "violations": []
+    }
+  ],
+  "screenshots": [
+    "homepage",
+    "games",
+    "for-teams",
+    "brand",
+    "campaign",
+    "case-study",
+    "library",
+    "library-mobile-375",
+    "editor-stress",
+    "editor",
+    "presenter-phone-preview",
+    "live-lobby",
+    "live-custom-question",
+    "live-reveal",
+    "session-results"
+  ],
+  "checked": 189
+}

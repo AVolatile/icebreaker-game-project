@@ -1,3 +1,4 @@
+import { CONTENT } from "../shared/content/library.js";
 import type { GameId, Prompt } from "../shared/types.js";
 export interface Question extends Prompt {
   answer?: number;
@@ -382,9 +383,27 @@ export function getPrompt(
     const pool = filtered.length ? filtered : items;
     return pool[(round + offset) % pool.length];
   };
-  if (game === "hotwire") return pick(TRIVIA);
+  if (game === "hotwire")
+    return pick([
+      ...TRIVIA,
+      ...CONTENT.filter((q) => q.type === "multiple-choice").map((q) => ({
+        title: q.prompt,
+        options: q.answers,
+        answer: q.correctAnswer ?? 0,
+        explanation: q.explanation,
+        pack: q.topic,
+      })),
+    ]);
   if (game === "odd-one-in") return pick(BLUFFS);
-  if (game === "room-temperature") return pick(MAJORITY);
+  if (game === "room-temperature")
+    return pick([
+      ...MAJORITY,
+      ...CONTENT.filter((q) => q.type === "poll").map((q) => ({
+        title: q.prompt,
+        options: q.answers,
+        pack: q.topic,
+      })),
+    ]);
   if (game === "sellout")
     return { title: PITCHES[(round + offset) % PITCHES.length] };
   if (game === "scribble-shift")

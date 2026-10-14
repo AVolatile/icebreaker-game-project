@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ruckus-realtime
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build:server
+    startCommand: npm run start:server
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: NODE_ENV
+        value: production
+      - key: REALTIME_ONLY
+        value: "true"
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: PUBLIC_APP_URL
+        sync: false

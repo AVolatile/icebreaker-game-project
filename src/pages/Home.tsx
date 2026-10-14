@@ -368,6 +368,41 @@ export function Home() {
           ))}
         </div>
       </section>
+      <section className="home-studio">
+        <div>
+          <Tag>INTRODUCING RUCKUS STUDIO</Tag>
+          <h2>
+            Your questions.
+            <br />
+            Their competitive side.
+          </h2>
+          <p>
+            Company lore. Snack debates. A specialist subject nobody saw coming.
+            Build a question board, preview both screens, and give it a room
+            code.
+          </p>
+          <Link to="/studio" className="button">
+            Build your own board <Icon name="arrow" />
+          </Link>
+          <Link to="/games" className="studio-demo-link">
+            Or play a Ruckus Original ↗
+          </Link>
+        </div>
+        <div className="home-studio-card">
+          <span>THE CREATOR’S SEAT</span>
+          <h3>Friday Team Trivia</h3>
+          <div>
+            <b>A</b>Things only this team knows <Icon name="check" />
+          </div>
+          <div>
+            <b>B</b>Everyone’s excellent snack opinions
+          </div>
+          <div>
+            <b>C</b>Your next great question
+          </div>
+          <p>CREATE → PREVIEW → PLAY</p>
+        </div>
+      </section>
       <section className="final-cta">
         <span className="eyebrow">BRAGGING RIGHTS START HERE.</span>
         <h2>

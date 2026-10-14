@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { gameById } from "../../shared/catalog";
+import { gameById, gameForRoom } from "../../shared/catalog";
 import { useParty } from "../lib/party";
 import { playSound } from "../lib/sound";
 import { Avatar, Confetti, Icon, Logo, Star, Tag } from "../components/Visuals";
 import { Awards, JoinQR, Scoreboard, Timer } from "../components/RoomParts";
 import { HostGallery } from "../components/HostGallery";
 import { ErrorMessage } from "../components/Layout";
+import { BoardSummary } from "../components/studio/BoardSummary";
 import { RoundReveal } from "../components/RoundReveal";
 export function HostRoom() {
   const party = useParty(),
@@ -101,7 +102,7 @@ export function HostRoom() {
         </Link>
       </div>
     );
-  const game = gameById(room.settings.playlist[room.gameIndex]);
+  const game = gameForRoom(room);
   const nextGame = gameById(
     room.settings.playlist[room.gameIndex + 1] ?? game.id,
   );
@@ -127,7 +128,7 @@ export function HostRoom() {
               : game.name.toUpperCase()}
           <span>
             {room.phase !== "lobby" && room.phase !== "final"
-              ? `GAME ${room.gameIndex + 1} / ${room.settings.playlist.length} · ROUND ${room.round + 1} / ${room.settings.rounds}`
+              ? `GAME ${room.gameIndex + 1} / ${room.settings.playlist.length} · ROUND ${room.round + 1} / ${room.board?.questionCount ?? room.settings.rounds}`
               : `${room.players.length} / 30 PLAYERS`}
           </span>
         </div>
@@ -190,9 +191,12 @@ export function HostRoom() {
                 )}
               </div>
               <div className="lobby-lineup">
-                {room.settings.playlist.map((id, i) => (
+                {(room.board
+                  ? ["hotwire" as const]
+                  : room.settings.playlist
+                ).map((id, i) => (
                   <span key={`${id}-${i}`}>
-                    <b>0{i + 1}</b> {gameById(id).name}
+                    <b>0{i + 1}</b> {room.board?.title ?? gameById(id).name}
                   </span>
                 ))}
               </div>
@@ -270,7 +274,7 @@ export function HostRoom() {
                 <div className="host-options">
                   {room.prompt.options.map((a, i) => (
                     <div key={a}>
-                      <span>{"ABCD"[i]}</span>
+                      <span>{"ABCDEF"[i]}</span>
                       <b>{a}</b>
                     </div>
                   ))}
@@ -313,7 +317,10 @@ export function HostRoom() {
         {room.phase === "results" && (
           <>
             <RoundReveal room={room} />
-            <div className="round-leaders">
+            <div
+              className="round-leaders"
+              hidden={room.showLeaderboard === false}
+            >
               {sorted.slice(0, 5).map((p, i) => (
                 <div key={p.id}>
                   <span>#{i + 1}</span>
@@ -348,8 +355,26 @@ export function HostRoom() {
         {room.phase === "final" && (
           <div className="final-screen">
             <Confetti />
-            <Tag color="#f6ed51">OFFICIALLY THE PERSON TO BEAT.</Tag>
-            {winner && (
+            <Tag color="#f6ed51">
+              {room.board?.scoring === false
+                ? "STRONG OPINIONS. GREAT COMPANY."
+                : "OFFICIALLY THE PERSON TO BEAT."}
+            </Tag>
+            {room.board?.scoring === false && (
+              <>
+                <h1>Every opinion counted.</h1>
+                <p>A good room doesn’t need a winner.</p>
+                <div className="lobby-players">
+                  {room.players.map((p) => (
+                    <div className="lobby-player" key={p.id}>
+                      <Avatar id={p.avatar} size={64} />
+                      <b>{p.name}</b>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {winner && room.board?.scoring !== false && (
               <>
                 <div className="winner-avatar">
                   <Star />
@@ -377,7 +402,8 @@ export function HostRoom() {
                 </p>
               </>
             )}
-            <Awards room={room} />
+            {room.board?.scoring !== false && <Awards room={room} />}
+            <BoardSummary room={room} />
             <div className="session-stats">
               <span>
                 <b>{room.stats.rounds}</b> rounds

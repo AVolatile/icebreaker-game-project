@@ -1,6 +1,8 @@
 """Build the original, editable Ruckus vector system. No third-party illustrations."""
 from pathlib import Path
 import html
+import json
+OVERRIDES=json.loads(Path("scripts/avatar-overrides.json").read_text())
 P=Path('public')
 ink='#191a24'
 colors=['#ff7448','#b7aff8','#a9d9f6','#c0ee7b','#ffcc67','#a9d9f6','#c0ee7b','#b7aff8','#ffa9d2','#f6ed51','#c0ee7b','#ff7448','#ffa9d2','#a9d9f6','#b7aff8','#ffcc67','#ffa9d2','#ff7448','#ffcc67','#a9d9f6']
@@ -32,6 +34,14 @@ for i,(name,body,c) in enumerate(zip(names,bodies,colors)):
  eyes='' if i==14 else f'<ellipse cx="45" cy="{eye_y}" rx="4" ry="6" fill="{ink}" stroke="none"/><ellipse cx="73" cy="{eye_y}" rx="4" ry="6" fill="{ink}" stroke="none"/>'
  mouth=f'<path d="M48 {eye_y+17}Q59 {eye_y+27} 70 {eye_y+17}" fill="none" stroke-linecap="round" stroke-width="3.5"/>' if i not in [5,10,13,15] else ''
  cheeks=f'<ellipse cx="35" cy="{eye_y+10}" rx="6" ry="3" fill="#ff7448" opacity=".55" stroke="none"/><ellipse cx="84" cy="{eye_y+10}" rx="6" ry="3" fill="#ff7448" opacity=".55" stroke="none"/>'
+ if str(i) in OVERRIDES:
+  change=OVERRIDES[str(i)];body=change.get("body",body);eyes=change["face"];mouth="";cheeks=""
+ if i == 6:
+  inner='<path d="M14 77H102V90H14Z" fill="#2548f4"/><path d="M14 77 29 46Q32 39 44 39H97V61L30 77Z" fill="#ff7448"/><circle cx="77" cy="49" r="3" fill="#191a24"/><ellipse cx="89" cy="55" rx="4" ry="2" fill="#ffa9d2"/>'
+ if i == 9:
+  inner='<path d="M30 42V24Q25 5 46 5H77Q96 5 89 24V42Z" fill="#ffcc67"/><rect x="16" y="36" width="91" height="64" rx="13" fill="#a9d9f6"/><ellipse cx="39" cy="59" rx="3" ry="5" fill="#191a24"/><ellipse cx="73" cy="59" rx="3" ry="5" fill="#191a24"/><path d="M43 73Q57 86 72 73" fill="none"/><path d="M100 62H115V83" fill="none" stroke-width="5"/>'
+ if i == 11:
+  inner='<rect x="21" y="19" width="64" height="39" rx="4" fill="#f9f7ed"/><rect x="8" y="45" width="90" height="42" rx="8" fill="#a9d9f6"/><rect x="22" y="50" width="22" height="12" rx="3" fill="#191a24"/><rect x="57" y="50" width="22" height="12" rx="3" fill="#191a24"/><path d="M44 55H57M29 71Q51 86 74 71" fill="none"/><path d="M24 87H81V103H24Z" fill="#f9f7ed"/>'
  s=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img"><title>{name}</title><g fill="{c}" stroke="{ink}" stroke-width="3.5" stroke-linejoin="round">{body}{eyes}{mouth}{cheeks}</g></svg>'
  (P/'avatars'/f'{i}.svg').write_text(s)
 (P/'brand'/'symbol.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="25" fill="#2548f4"/><path d="M24 20H55Q82 20 77 43Q74 55 59 58L80 81H51L34 60V81H14V20Z" fill="#f6ed51"/><circle cx="47" cy="39" r="10" fill="#2548f4"/><path d="m84 14 5 9 10 1-8 7 2 10-9-5-9 5 2-10-8-7 10-1Z" fill="#ffa9d2"/></svg>')
@@ -58,6 +68,12 @@ for i,a in enumerate(scene_avatars):
  '<rect x="379" y="72" width="183" height="141" rx="8" fill="#2548f4"/><rect x="395" y="87" width="151" height="110" fill="#f9f7ed"/><path d="M470 213V255M427 256H510" fill="none" stroke-width="9"/>',
  '<path d="M370 205H566V267H370Z" fill="#2548f4"/><path d="M433 200V154Q438 135 451 152" fill="none" stroke-width="9"/><circle cx="451" cy="148" r="9" fill="#191a24"/>'
  ][i]
+ if i == 6:
+  inner='<path d="M14 77H102V90H14Z" fill="#2548f4"/><path d="M14 77 29 46Q32 39 44 39H97V61L30 77Z" fill="#ff7448"/><circle cx="77" cy="49" r="3" fill="#191a24"/><ellipse cx="89" cy="55" rx="4" ry="2" fill="#ffa9d2"/>'
+ if i == 9:
+  inner='<path d="M30 42V24Q25 5 46 5H77Q96 5 89 24V42Z" fill="#ffcc67"/><rect x="16" y="36" width="91" height="64" rx="13" fill="#a9d9f6"/><ellipse cx="39" cy="59" rx="3" ry="5" fill="#191a24"/><ellipse cx="73" cy="59" rx="3" ry="5" fill="#191a24"/><path d="M43 73Q57 86 72 73" fill="none"/><path d="M100 62H115V83" fill="none" stroke-width="5"/>'
+ if i == 11:
+  inner='<rect x="21" y="19" width="64" height="39" rx="4" fill="#f9f7ed"/><rect x="8" y="45" width="90" height="42" rx="8" fill="#a9d9f6"/><rect x="22" y="50" width="22" height="12" rx="3" fill="#191a24"/><rect x="57" y="50" width="22" height="12" rx="3" fill="#191a24"/><path d="M44 55H57M29 71Q51 86 74 71" fill="none"/><path d="M24 87H81V103H24Z" fill="#f9f7ed"/>'
  s=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><title>Original Ruckus office scene {i+1}</title><rect width="640" height="360" fill="{bg}"/><path d="M0 279H640V360H0Z" fill="#f9f7ed" opacity=".45"/><g stroke="{ink}" stroke-width="3" stroke-linejoin="round">{props}<g transform="translate(153 100) scale(1.5)">{inner}</g><path d="M194 272V305M294 273V305M377 268V305M520 270V305" fill="none" stroke-width="8"/></g><path d="m86 64 7 14 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2Z" fill="#2548f4"/><circle cx="559" cy="302" r="10" fill="#ff7448"/></svg>'
  (P/'scenes'/f'{i}.svg').write_text(s)
 lines=['Your agenda just got a plot twist.','The projector has a personality now.','No fun facts were harmed.','Reply all. Play all.','The only meeting worth running over.','Same Wi-Fi. Different wavelength.','Bragging rights. No paperwork.','A little less agenda. A lot more Ruckus.']

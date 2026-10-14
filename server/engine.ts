@@ -1,4 +1,6 @@
 import { randomInt, randomUUID } from "node:crypto";
+import type { CustomBoard, CustomQuestion } from "../shared/boards.js";
+import type { BoardSessionSummary } from "../shared/types.js";
 import { gameById } from "../shared/catalog.js";
 import type {
   HostAction,
@@ -70,12 +72,18 @@ export class Room {
   private roundSequence = 0;
   private offset = randomInt(500);
   private ranks = new Map<string, number>();
+  private boardQuestion: CustomQuestion | null = null;
+  private history: BoardSessionSummary["questions"] = [];
+  private fastest: BoardSessionSummary["fastest"] = null;
   constructor(
     readonly code: string,
     readonly settings: Settings,
     readonly joinUrl: string,
     private onChange: () => void,
-  ) {}
+    readonly board?: CustomBoard,
+  ) {
+    if (board) this.board = structuredClone(board);
+  }
   private publish() {
     this.changedAt = Date.now();
     this.onChange();
@@ -214,10 +222,37 @@ export class Room {
           title: this.prompt.title,
           options: this.prompt.options,
           scene: this.prompt.scene,
-          explanation: reveal ? this.prompt.explanation : undefined,
+          explanation:
+            reveal && (this.board?.settings.showExplanation ?? true)
+              ? this.prompt.explanation
+              : undefined,
+          questionType: this.boardQuestion?.type,
+          scoreMode: this.boardQuestion?.scoreMode,
         }
       : null;
     return {
+      board: this.board
+        ? {
+            title: this.board.title,
+            description: this.board.description,
+            color: this.board.coverStyle.color,
+            questionCount: this.board.questions.length,
+            scoring: this.board.questions.some(
+              (q) => q.type !== "poll" && q.scoreMode !== "no-score",
+            ),
+            leaderboardFrequency: this.board.settings.leaderboardFrequency,
+          }
+        : undefined,
+      summary:
+        this.board && this.phase === "final"
+          ? this.sessionSummary()
+          : undefined,
+      showLeaderboard:
+        !this.board ||
+        this.phase === "final" ||
+        this.board.settings.leaderboardFrequency === "each" ||
+        (this.board.settings.leaderboardFrequency === "every-5" &&
+          (this.round + 1) % 5 === 0),
       code: this.code,
       phase: this.phase,
       settings: this.settings,
@@ -232,7 +267,10 @@ export class Room {
       paused: this.paused,
       submissions,
       counts: reveal ? this.counts : [],
-      correct: reveal ? this.correct : [],
+      correct:
+        reveal && (this.board?.settings.showCorrectAnswer ?? true)
+          ? this.correct
+          : [],
       joinUrl: this.joinUrl,
       serverTime: Date.now(),
       createdAt: this.createdAt,
@@ -293,6 +331,9 @@ export class Room {
       this.gameIndex = 0;
       this.round = 0;
       this.offset += 3;
+      this.history = [];
+      this.fastest = null;
+      this.boardQuestion = null;
       this.prompt = null;
       this.entries.clear();
       this.votes.clear();
@@ -337,6 +378,7 @@ export class Room {
     }
   }
   private roundDuration() {
+    if (this.board) return (this.boardQuestion?.timer ?? 20) * 1000;
     const category = gameById(this.settings.playlist[this.gameIndex]).category;
     const base = category === "creative" ? 45000 : 15000;
     return Math.round(
@@ -365,12 +407,35 @@ export class Room {
       p.public.delta = 0;
       p.public.movement = 0;
     }
-    this.prompt = getPrompt(
-      this.settings.playlist[this.gameIndex],
-      this.round,
-      this.settings.pack,
-      this.offset,
-    );
+    if (this.board) {
+      const source = this.board.questions[this.round];
+      const choices = source.answers.map((text, index) => ({ text, index }));
+      if (this.board.settings.randomizeAnswers && source.type !== "true-false")
+        for (let i = choices.length - 1; i > 0; i--) {
+          const j = randomInt(i + 1);
+          [choices[i], choices[j]] = [choices[j], choices[i]];
+        }
+      this.boardQuestion = {
+        ...source,
+        answers: choices.map((a) => a.text),
+        correctAnswer:
+          source.correctAnswer === null
+            ? null
+            : choices.findIndex((a) => a.index === source.correctAnswer),
+      };
+      this.prompt = {
+        title: source.prompt,
+        options: this.boardQuestion.answers,
+        answer: this.boardQuestion.correctAnswer ?? undefined,
+        explanation: source.explanation,
+      };
+    } else
+      this.prompt = getPrompt(
+        this.settings.playlist[this.gameIndex],
+        this.round,
+        this.settings.pack,
+        this.offset,
+      );
     this.setPhase("active", this.roundDuration());
   }
   advance() {
@@ -395,7 +460,10 @@ export class Room {
         this.closeRound();
         break;
       case "results":
-        if (this.round + 1 < this.settings.rounds) {
+        if (
+          this.round + 1 <
+          (this.board?.questions.length ?? this.settings.rounds)
+        ) {
           this.round++;
           this.startRound();
         } else if (this.gameIndex + 1 < this.settings.playlist.length)
@@ -439,7 +507,9 @@ export class Room {
     if (this.entries.has(playerId))
       throw new Error("Your answer is already locked in.");
     if (gameById(game).category !== "creative") {
-      if (!("choice" in input)) throw new Error("Tap one of the four answers.");
+      if (!("choice" in input)) throw new Error("Tap one of the answers.");
+      if (input.choice >= (this.prompt?.options?.length ?? 4))
+        throw new Error("That answer is not part of this question.");
     } else if (game === "scribble-shift") {
       if (!("drawing" in input)) throw new Error("Send your drawing to enter.");
     } else {
@@ -456,6 +526,8 @@ export class Room {
     this.stats.answers++;
     p.public.responseMs.push(elapsed);
     this.publish();
+    if (this.board && [...this.eligible].every((id) => this.entries.has(id)))
+      this.closeRound();
   }
   private closeRound() {
     const game = this.settings.playlist[this.gameIndex];
@@ -464,10 +536,10 @@ export class Room {
         .sort((a, b) => b.public.score - a.public.score)
         .map((p, i) => [p.public.id, i]),
     );
-    this.counts = [0, 0, 0, 0];
+    this.counts = Array(this.prompt?.options?.length ?? 4).fill(0);
     for (const e of this.entries.values())
       if ("choice" in e.input) this.counts[e.input.choice]++;
-    if (game === "room-temperature") {
+    if (!this.board && game === "room-temperature") {
       const max = Math.max(...this.counts);
       this.correct =
         max > 0 ? this.counts.flatMap((n, i) => (n === max ? [i] : [])) : [];
@@ -477,8 +549,15 @@ export class Room {
       const e = this.entries.get(p.public.id);
       let delta = 0;
       if (e && "choice" in e.input && this.correct.includes(e.input.choice)) {
-        delta =
-          game === "hotwire"
+        delta = this.boardQuestion
+          ? this.boardQuestion.type === "poll" ||
+            this.boardQuestion.scoreMode === "no-score"
+            ? 0
+            : this.boardQuestion.scoreMode === "casual"
+              ? 500
+              : 500 +
+                Math.round(500 * Math.max(0, 1 - e.elapsed / this.duration))
+          : game === "hotwire"
             ? 500 + Math.round(500 * Math.max(0, 1 - e.elapsed / this.duration))
             : game === "room-temperature"
               ? 600
@@ -499,8 +578,47 @@ export class Room {
       .forEach(
         (p, i) => (p.public.movement = (this.ranks.get(p.public.id) ?? i) - i),
       );
+    if (this.boardQuestion) {
+      const scored = this.boardQuestion.type !== "poll";
+      const correct = [...this.entries.values()].filter(
+        (e) => "choice" in e.input && this.correct.includes(e.input.choice),
+      ).length;
+      this.history.push({
+        number: this.round + 1,
+        prompt: this.boardQuestion.prompt,
+        respondents: this.entries.size,
+        correct,
+        timedOut: this.eligible.size - this.entries.size,
+        scored,
+      });
+      for (const e of this.entries.values())
+        if (!this.fastest || e.elapsed < this.fastest.ms)
+          this.fastest = {
+            name: this.players.get(e.playerId)?.public.name ?? "Former player",
+            ms: e.elapsed,
+          };
+    }
     this.stats.rounds++;
     this.setPhase("results", this.settings.autoAdvance ? 9000 : 0);
+  }
+  private sessionSummary(): BoardSessionSummary {
+    const scored = this.history.filter((q) => q.scored);
+    const attempts = scored.reduce((n, q) => n + q.respondents + q.timedOut, 0);
+    const hardest = [...scored].sort(
+      (a, b) =>
+        a.correct / Math.max(1, a.respondents + a.timedOut) -
+        b.correct / Math.max(1, b.respondents + b.timedOut),
+    )[0];
+    return {
+      questions: this.history,
+      correctness: attempts
+        ? Math.round(
+            (scored.reduce((n, q) => n + q.correct, 0) / attempts) * 100,
+          )
+        : null,
+      hardestQuestion: hardest?.number ?? null,
+      fastest: this.fastest,
+    };
   }
   remove(id: string) {
     const p = this.players.get(id);
@@ -568,8 +686,12 @@ export class Room {
                 });
               else
                 this.submit(p.public.id, {
-                  choice:
-                    game === "room-temperature"
+                  choice: this.boardQuestion
+                    ? this.boardQuestion.correctAnswer !== null &&
+                      Math.random() < 0.65
+                      ? this.boardQuestion.correctAnswer
+                      : randomInt(this.boardQuestion.answers.length)
+                    : game === "room-temperature"
                       ? randomInt(4)
                       : Math.random() < 0.65
                         ? (this.prompt?.answer ?? 0)

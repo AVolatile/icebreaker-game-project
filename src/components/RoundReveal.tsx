@@ -1,9 +1,9 @@
-import { gameById } from "../../shared/catalog";
+import { gameForRoom } from "../../shared/catalog";
 import type { RoomView } from "../../shared/types";
 import { Avatar, Icon, Tag } from "./Visuals";
 import { Drawing } from "./Drawing";
 export function RoundReveal({ room }: { room: RoomView }) {
-  const game = gameById(room.settings.playlist[room.gameIndex]);
+  const game = gameForRoom(room);
   const submissions = [...room.submissions].sort((a, b) => b.votes - a.votes);
   const max = submissions[0]?.votes ?? 0;
   return (
@@ -14,9 +14,11 @@ export function RoundReveal({ room }: { room: RoomView }) {
           ? max > 0
             ? "The room has spoken."
             : "The gallery is open."
-          : game.id === "room-temperature"
-            ? "You’ve got a type."
-            : "Truth has entered the room."}
+          : room.prompt?.questionType === "poll"
+            ? "Every opinion, on the board."
+            : game.id === "room-temperature"
+              ? "You’ve got a type."
+              : "Truth has entered the room."}
       </h1>
       {room.prompt?.options ? (
         <>
@@ -26,7 +28,7 @@ export function RoundReveal({ room }: { room: RoomView }) {
                 className={`distribution-row ${room.correct.includes(i) ? "correct" : ""}`}
                 key={a}
               >
-                <span>{"ABCD"[i]}</span>
+                <span>{"ABCDEF"[i]}</span>
                 <b>{a}</b>
                 <div className="distribution-track">
                   <i
