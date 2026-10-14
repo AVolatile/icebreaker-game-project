@@ -39,7 +39,7 @@ export const questionSchema = z
     explanation: text(300),
     order: z.number().int().min(0).max(49),
     topic: z.string().max(50).optional(),
-    difficulty: z.enum(["easy", "medium"]).optional(),
+    difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   })
   .strict();
 export const boardSchema = z

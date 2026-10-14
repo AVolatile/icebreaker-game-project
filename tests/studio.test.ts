@@ -36,10 +36,10 @@ function board() {
   ];
   return b;
 }
-test("all library questions and eleven templates have safe, valid, unique content", () => {
+test("all library questions and default starters have safe, valid, unique content", () => {
   assert.equal(CONTENT.length, 168);
   assert.equal(Object.keys(TOPICS).length, 21);
-  assert.equal(TEMPLATES.length, 11);
+  assert.equal(TEMPLATES.length, 12);
   assert.equal(new Set(CONTENT.map((q) => q.id)).size, CONTENT.length);
   assert.equal(new Set(CONTENT.map((q) => q.prompt)).size, CONTENT.length);
   CONTENT.forEach((q) => {
@@ -249,4 +249,49 @@ test("an active room takes an isolated custom board snapshot", () => {
   assert.equal(r.prompt?.answer, 5);
   assert.equal(r.prompt?.options?.[5], "Six");
   r.dispose();
+});
+
+test("After Hours is a complete default board with preserved keys and a playable 29-question lifecycle", () => {
+  const starter = TEMPLATES.find((b) => b.id === "after-hours-hot-takes");
+  assert.ok(starter);
+  const custom = validateBoard(starter);
+  assert.equal(custom.questions.length, 29);
+  assert.equal(custom.questions[0].correctAnswer, 2);
+  assert.equal(custom.questions[1].correctAnswer, 1);
+  assert.equal(custom.questions[28].correctAnswer, 2);
+  assert.equal(custom.questions[28].difficulty, "hard");
+  assert.ok(custom.description.includes("tongue-in-cheek"));
+  assert.ok(!CONTENT.some((q) => q.id.startsWith("after-hours-")));
+  const room = new Room(
+    "ABCDE",
+    { ...DEFAULT_SETTINGS, playlist: ["hotwire"], autoAdvance: false },
+    "https://ruckus.example/join",
+    () => {},
+    custom,
+  );
+  try {
+    const right = room.join("Punchline expert", 5, "right");
+    const wrong = room.join("Friendly argument", 1, "wrong");
+    room.action("start");
+    room.advance();
+    for (const q of custom.questions) {
+      assert.equal(room.phase, "active");
+      assert.equal(room.prompt?.title, q.prompt);
+      const key = room.prompt!.answer!;
+      assert.equal(room.prompt!.options![key], q.answers[q.correctAnswer!]);
+      assert.equal(room.view(right.id).prompt?.explanation, undefined);
+      assert.ok(!JSON.stringify(room.view(right.id)).includes("correctAnswer"));
+      room.submit(right.id, { choice: key });
+      room.submit(wrong.id, { choice: (key + 1) % q.answers.length });
+      assert.equal(room.phase, "results");
+      assert.equal(room.view().prompt?.explanation, q.explanation);
+      room.advance();
+    }
+    assert.equal(room.phase, "final");
+    assert.equal(room.players.get(right.id)?.public.score, 14500);
+    assert.equal(room.players.get(wrong.id)?.public.score, 0);
+    assert.equal(room.view().summary?.questions.length, 29);
+  } finally {
+    room.dispose();
+  }
 });

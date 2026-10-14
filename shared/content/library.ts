@@ -1,3 +1,4 @@
+import { AFTER_HOURS_BOARD } from "./after-hours.js";
 import { KNOWLEDGE } from "./knowledge.js";
 import type { CustomBoard, CustomQuestion } from "../boards.js";
 import { TOPICS } from "./topics.js";
@@ -60,6 +61,7 @@ function template(
   };
 }
 export const TEMPLATES: CustomBoard[] = [
+  AFTER_HOURS_BOARD,
   template(
     "friday-random",
     "Friday Random",

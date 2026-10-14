@@ -678,6 +678,37 @@ kbd {
   top: 8px;
   left: 43px;
 }
+.home-hero .no-download {
+  padding: 46px 14px 0;
+  font-size: 13px;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  text-align: center;
+  box-sizing: border-box;
+}
+.home-hero .no-download > .star {
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+@media (min-width: 851px) and (max-width: 1100px) {
+  .home-hero .no-download {
+    padding: 38px 11px 0;
+    font-size: 11px;
+  }
+}
+@media (max-width: 600px) {
+  .home-hero .no-download {
+    padding: 31px 9px 0;
+    font-size: 9px;
+  }
+}
+@media (max-width: 359px) {
+  .home-hero .no-download {
+    padding: 27px 8px 0;
+    font-size: 8px;
+  }
+}
 .meeting-sticker {
   bottom: 10px;
   left: 32px;
