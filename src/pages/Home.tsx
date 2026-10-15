@@ -5,15 +5,12 @@ import { GameCard } from "../components/GameCard";
 import { GAMES, DEFAULT_SETTINGS } from "../../shared/catalog";
 import { useParty } from "../lib/party";
 import { ErrorMessage } from "../components/Layout";
-import { DrawnArrow, HomeOnboarding } from "../components/HomeOnboarding";
 export function DemoButton({
   className = "button",
   children = "Try a demo party",
-  describedBy,
 }: {
   className?: string;
   children?: string;
-  describedBy?: string;
 }) {
   const party = useParty(),
     navigate = useNavigate(),
@@ -22,7 +19,6 @@ export function DemoButton({
     <button
       className={className}
       disabled={busy}
-      aria-describedby={describedBy}
       onClick={async () => {
         setBusy(true);
         const reply = await party.create(
@@ -44,7 +40,7 @@ export function StagePreview() {
   return (
     <div className="hero-playground">
       <span className="preview-label">
-        <Icon name="screen" /> HOST SCREEN · LAPTOP / TV
+        <span className="live-dot" /> ONE SCREEN. EVERYONE IN.
       </span>
       <div className="preview-stage">
         <div className="preview-stage-header">
@@ -75,7 +71,7 @@ export function StagePreview() {
           </div>
           <p className="preview-feedback" aria-live="polite">
             {pick === null
-              ? "Just a preview. Tap an answer."
+              ? "Go on. Tap an answer."
               : pick === 0
                 ? "Excellent. Upper management material."
                 : pick === 1
@@ -96,11 +92,10 @@ export function StagePreview() {
         </div>
       </div>
       <div className="hero-phone">
-        <span className="player-device-label">PLAYER PHONE</span>
         <div className="phone-speaker" />
         <div className="phone-top">
           <Logo />
-          <span>PREVIEW</span>
+          <span>J7KM5</span>
         </div>
         <span className="phone-status">YOU’RE IN.</span>
         <Avatar id={5} size={104} />
@@ -128,9 +123,9 @@ export function StagePreview() {
       <Avatar id={1} size={93} className="floating-bandit" />
       <Star className="hero-star" />
       <span className="hero-scribble">
-        Your phone.
+        Phones out.
         <br />
-        Your controller. <DrawnArrow />
+        Game faces on. <span>↗</span>
       </span>
     </div>
   );
@@ -153,49 +148,19 @@ export function Home() {
           <p>
             Your conference room has a game mode.
             <br />
-            Party games on the big screen. Everyone plays from their phone.
+            One screen. A few phones. A very good reason
+            <br className="desktop-break" /> to put the spreadsheet away.
           </p>
-          <div className="hero-host-note" id="host-action-note">
-            <strong>Host the game on this screen.</strong>
-            <span>Players scan your room’s QR code with their phones.</span>
-          </div>
           <div className="hero-actions">
-            <div className="hero-action">
-              <Link
-                className="button"
-                to="/host"
-                aria-describedby="host-action-note"
-              >
-                Start a ruckus <Icon name="arrow" />
-              </Link>
-              <small>Host a room · choose your games</small>
-            </div>
-            <div className="hero-action">
-              <DemoButton
-                className="button text-button"
-                children="Take it for a spin"
-                describedBy="demo-action-note"
-              />
-              <small id="demo-action-note">
-                Host a demo · 8 bot players included
-              </small>
-            </div>
+            <Link className="button" to="/host">
+              Start a ruckus <Icon name="arrow" />
+            </Link>
+            <DemoButton
+              className="button text-button"
+              children="Take it for a spin"
+            />
           </div>
           <ErrorMessage message={error} />
-          <p className="hero-player-path">
-            Got a room code?{" "}
-            <Link to="/join">
-              Join a room <span aria-hidden="true">↗</span>
-            </Link>
-            <span>That’s the player entrance.</span>
-          </p>
-          <aside className="hero-solo-tip" aria-label="Solo demo tip">
-            <span className="solo-tip-label">FLYING SOLO?</span>
-            <p>
-              Keep this open on your laptop. Scan the room’s QR with your phone.
-              Add demo players in the lobby, then start on your laptop.
-            </p>
-          </aside>
           <div className="hero-fine">
             <span>✳ 2–30 people</span>
             <span>No accounts</span>
@@ -204,7 +169,6 @@ export function Home() {
         </div>
         <StagePreview />
       </section>
-      <HomeOnboarding />
       <div
         className="ticker"
         aria-label="Six games. Zero awkward introductions."
@@ -215,6 +179,54 @@ export function Home() {
           GAMES <span>✳</span> ZERO AWKWARD INTRODUCTIONS <span>✳</span>
         </div>
       </div>
+      <section className="section how-section">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">THE WHOLE SETUP. REALLY.</span>
+            <h2>
+              From “now what?”
+              <br />
+              to “one more round.”
+            </h2>
+          </div>
+          <p>
+            No downloads. No logins.
+            <br />
+            No one introducing their favorite fact
+            <br />
+            about themselves.
+          </p>
+        </div>
+        <div className="how-steps">
+          {[
+            {
+              n: "01",
+              icon: "screen",
+              title: "Claim the big screen.",
+              body: "Laptop, TV, projector. Open a room and make it the main event.",
+            },
+            {
+              n: "02",
+              icon: "scan",
+              title: "Scan yourself in.",
+              body: "One QR code. Pick a name and a new alter ego. You’re in.",
+            },
+            {
+              n: "03",
+              icon: "bolt",
+              title: "Let things get lively.",
+              body: "Tap, pitch, draw, vote. Your phone does all the heavy lifting.",
+            },
+          ].map((s) => (
+            <div className="how-step" key={s.n}>
+              <span className="step-number">{s.n}</span>
+              <Icon name={s.icon} />
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
       <section className="section games-section">
         <div className="section-heading">
           <div>
@@ -345,10 +357,9 @@ export function Home() {
           <p>
             Meet Maya, Priya, and the demo crew. They answer, vote,
             <br />
-            and take the competition just seriously enough. You host on this
-            screen; scan the room’s QR with your phone to play along.
+            and take the competition just seriously enough.
           </p>
-          <DemoButton className="button yellow" children="Host a demo party" />
+          <DemoButton className="button yellow" />
           <ErrorMessage message={error} />
         </div>
         <div className="demo-avatar-stack">
@@ -367,7 +378,8 @@ export function Home() {
           </h2>
           <p>
             Company lore. Snack debates. A specialist subject nobody saw coming.
-            Make your own questions in Studio, then preview or host your board.
+            Build a question board, preview both screens, and give it a room
+            code.
           </p>
           <Link to="/studio" className="button">
             Build your own board <Icon name="arrow" />
@@ -400,9 +412,9 @@ export function Home() {
           <Star />
         </h2>
         <Link className="button" to="/host">
-          Host your own ruckus <Icon name="arrow" />
+          Get your room code <Icon name="arrow" />
         </Link>
-        <p>Host on this screen. Players join from their phones.</p>
+        <p>Workplace-friendly. Competitive by nature.</p>
       </section>
     </>
   );
