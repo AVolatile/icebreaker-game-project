@@ -63,9 +63,8 @@ export function HostSetup() {
           <span>a room code.</span>
         </h1>
         <p>
-          Choose your lineup. Claim a screen.
-          <br />
-          Give your people a very good distraction.
+          This screen runs the game. Choose your lineup, then open the room to
+          get a QR code. Everyone else joins from their phone.
         </p>
         <div className="setup-character">
           <Avatar id={5} size={190} />
@@ -77,8 +76,12 @@ export function HostSetup() {
           </span>
         </div>
         <div className="setup-demo">
-          <p>Just looking around?</p>
-          <DemoButton className="button outline" />
+          <p>
+            Trying it solo? Open your room, scan its QR with your phone, then
+            add demo players in the lobby. Or host a ready-made demo with 8
+            bots:
+          </p>
+          <DemoButton className="button outline" children="Host a demo party" />
         </div>
       </div>
       <form className="setup-form" onSubmit={create}>
@@ -292,7 +295,9 @@ export function Join() {
           <br />
           of the <span>ruckus.</span>
         </h1>
-        <p>No passwords. No small talk. Let’s get you in.</p>
+        <p>
+          Your phone is the controller. Enter the code from your host’s screen.
+        </p>
       </div>
       <form onSubmit={join} className="join-form" noValidate>
         <label htmlFor="room-code">Room code</label>

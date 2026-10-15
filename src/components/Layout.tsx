@@ -42,10 +42,14 @@ export function Layout() {
           <NavLink to="/how-it-works">How it works</NavLink>
           <NavLink to="/studio">Build a board</NavLink>
           <NavLink to="/join" className="nav-join">
-            Join a room <span>↗</span>
+            <small className="nav-role">PLAYER</small>
+            Join a room <span aria-hidden="true">↗</span>
           </NavLink>
           <Link className="button small" to="/host">
-            Start a ruckus <Icon name="arrow" />
+            <span>
+              <small className="nav-role">HOST</small>Start a ruckus
+            </span>
+            <Icon name="arrow" />
           </Link>
         </nav>
       </header>

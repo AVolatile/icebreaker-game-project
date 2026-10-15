@@ -1,0 +1,325 @@
+/* Homepage teaching stays in the marketing layer; room and controller styles are untouched. */
+.nav-role {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+}
+.site-header .button .nav-role {
+  text-align: left;
+}
+.setup-page .setup-demo {
+  display: block;
+}
+.setup-page .setup-demo p {
+  margin-bottom: 14px;
+  font-size: 12px;
+}
+.setup-page .setup-demo > .button {
+  font-size: 12px;
+  width: auto;
+}
+.home-hero .hero-host-note {
+  display: grid;
+  gap: 4px;
+  margin-top: 23px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.hero-host-note strong {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+.home-hero .hero-actions {
+  gap: 18px;
+  margin: 17px 0 20px;
+}
+.hero-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.hero-action small {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #50505a;
+}
+.home-hero .hero-player-path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  font-size: 12px;
+  color: var(--ink);
+}
+.hero-player-path a {
+  font-weight: 800;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.hero-player-path > span {
+  color: #50505a;
+}
+.hero-solo-tip {
+  margin: 20px 0;
+  padding: 12px 15px;
+  max-width: 460px;
+  border-left: 3px solid var(--ink);
+  background: var(--yellow);
+}
+.solo-tip-label {
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.hero-solo-tip p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 3px;
+}
+.home-hero .preview-label {
+  color: var(--blue);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.preview-label > .icon {
+  width: 24px;
+  height: 24px;
+}
+.player-device-label {
+  position: absolute;
+  top: -16px;
+  left: 9px;
+  padding: 5px 9px;
+  background: var(--green);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transform: rotate(-4deg);
+}
+.drawn-arrow {
+  width: 64px;
+  height: 36px;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hero-scribble > .drawn-arrow {
+  position: absolute;
+  right: -62px;
+  top: -7px;
+  transform: rotate(-33deg);
+}
+.home-onboarding {
+  max-width: 1600px;
+  padding: 30px 5.1% 38px;
+  margin: auto;
+  border-top: 1px solid var(--line);
+}
+.onboarding-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-bottom: 25px;
+}
+.onboarding-heading h2 {
+  font-size: 32px;
+}
+.onboarding-heading p {
+  font-size: 13px;
+  font-weight: 700;
+}
+.onboarding-beats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 40px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.onboarding-beats > li {
+  position: relative;
+  min-width: 0;
+}
+.onboarding-beat-art {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.onboarding-number {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--ink);
+  background: var(--yellow);
+  box-shadow: 2px 2px 0 var(--ink);
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 800;
+  transform: rotate(-6deg);
+}
+.onboarding-beats > li:nth-child(even) .onboarding-number {
+  background: var(--pink);
+  transform: rotate(5deg);
+}
+.onboarding-beat-art > .icon {
+  width: 42px;
+  height: 42px;
+  color: var(--blue);
+}
+.onboarding-beat-copy h3 {
+  margin-bottom: 7px;
+  font-size: 25px;
+}
+.onboarding-beat-copy p {
+  max-width: 250px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #50505a;
+}
+.onboarding-beats > li > .drawn-arrow {
+  position: absolute;
+  top: 3px;
+  right: 0;
+  width: 58px;
+  transform: rotate(-6deg);
+}
+@media (min-width: 851px) and (max-width: 1200px) {
+  .hero-action > .button {
+    font-size: 12px;
+    padding: 16px;
+    gap: 10px;
+  }
+  .home-hero .hero-actions {
+    gap: 12px;
+  }
+  .hero-action small {
+    font-size: 9px;
+  }
+  .hero-scribble > .drawn-arrow {
+    width: 48px;
+    right: -45px;
+  }
+}
+@media (min-width: 851px) and (max-width: 1100px) {
+  .home-hero .hero-scribble {
+    left: 180px;
+    bottom: -4px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 850px) {
+  .home-onboarding {
+    padding-inline: 7%;
+  }
+  .onboarding-beats {
+    gap: 25px;
+  }
+  .onboarding-beats > li > .drawn-arrow {
+    width: 40px;
+    right: -15px;
+  }
+}
+@media (max-width: 600px) {
+  .home-hero .hero-host-note {
+    font-size: 12px;
+    margin-top: 20px;
+  }
+  .hero-host-note strong {
+    font-size: 19px;
+  }
+  .home-hero .hero-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  .hero-action > .button {
+    font-size: 11px;
+    min-height: 50px;
+    padding: 13px 10px;
+    gap: 6px;
+    width: 100%;
+  }
+  .hero-action > .text-button {
+    padding-inline: 0;
+  }
+  .hero-action small {
+    font-size: 10px;
+  }
+  .hero-player-path > span {
+    flex-basis: 100%;
+  }
+  .home-hero .preview-label {
+    font-size: 10px;
+    left: 8px;
+  }
+  .preview-label > .icon {
+    width: 20px;
+    height: 20px;
+  }
+  .player-device-label {
+    font-size: 9px;
+    padding: 5px 7px;
+    left: 4px;
+  }
+  .home-hero .hero-scribble {
+    display: none;
+  }
+  .home-onboarding {
+    padding: 28px 6% 32px;
+  }
+  .onboarding-heading {
+    display: block;
+  }
+  .onboarding-heading h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  .onboarding-beats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  .onboarding-beats > li {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .onboarding-beat-art {
+    gap: 10px;
+    margin: 0;
+  }
+  .onboarding-beat-art > .icon {
+    width: 32px;
+    height: 38px;
+  }
+  .onboarding-number {
+    width: 32px;
+    height: 32px;
+  }
+  .onboarding-beat-copy h3 {
+    font-size: 23px;
+    margin-bottom: 5px;
+  }
+  .onboarding-beat-copy p {
+    max-width: none;
+  }
+  .onboarding-beats > li > .drawn-arrow {
+    display: none;
+  }
+}
