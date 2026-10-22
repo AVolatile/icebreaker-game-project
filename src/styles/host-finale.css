@@ -1,0 +1,421 @@
+/* Shared host standings. Player controller scoreboards keep their existing sizing. */
+.scoreboard-stage {
+  --standing-height: clamp(54px, 7.5svh, 80px);
+  --standing-avatar: clamp(34px, 4.8svh, 48px);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  text-align: left;
+}
+.scoreboard-stage.scoreboard-dense {
+  --standing-height: clamp(40px, 5.4svh, 56px);
+  --standing-avatar: clamp(28px, 3.7svh, 38px);
+}
+.scoreboard-stage .scoreboard-heading {
+  flex-shrink: 0;
+  padding: 13px 18px;
+  font-size: clamp(10px, 0.8vw, 13px);
+}
+.scoreboard-stage .scoreboard-rows {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-color: var(--yellow) #1736cb;
+}
+.scoreboard-stage .scoreboard-rows:focus-visible {
+  outline-offset: -4px;
+}
+.scoreboard-stage .score-row {
+  min-height: var(--standing-height);
+  padding: 5px 18px;
+  gap: 12px;
+}
+.scoreboard-stage .score-row .avatar {
+  flex-shrink: 0;
+  width: var(--standing-avatar);
+  height: var(--standing-avatar);
+}
+.scoreboard-stage .score-name {
+  font-size: clamp(15px, 1.2vw, 22px);
+  text-wrap: initial;
+}
+.scoreboard-stage .score-name small {
+  font-size: 8px;
+}
+.scoreboard-stage .score-number {
+  font-size: clamp(24px, 2vw, 36px);
+  line-height: 1;
+}
+.scoreboard-stage .score-rank {
+  font-size: clamp(17px, 1.4vw, 24px);
+  line-height: 1;
+}
+.scoreboard-hint {
+  flex-shrink: 0;
+  padding: 9px 18px;
+  border-top: 1px solid #ffffff30;
+  font-size: 11px;
+  color: #d9dfff;
+}
+
+/* Final totals share one edge; movement belongs to rank, delta below the total. */
+.scoreboard-finale {
+  --score-column: clamp(96px, 8vw, 144px);
+  --score-delta-height: 12px;
+}
+.scoreboard-finale.scoreboard-dense {
+  --score-delta-height: 9px;
+}
+.scoreboard-finale .score-row {
+  display: grid;
+  grid-template-columns: 28px 24px var(--standing-avatar) minmax(0, 1fr) var(
+      --score-column
+    );
+  grid-template-rows: auto;
+  padding-block: 2px;
+}
+.scoreboard-finale .score-rank {
+  grid-area: 1 / 1;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.scoreboard-finale .movement {
+  grid-area: 1 / 2;
+  font-size: 10px;
+  line-height: 1;
+}
+.scoreboard-finale .score-row > .avatar {
+  grid-area: 1 / 3;
+}
+.scoreboard-finale .score-name {
+  grid-area: 1 / 4;
+}
+.scoreboard-finale .score-points {
+  grid-area: 1 / 5;
+  display: grid;
+  grid-template-rows: auto var(--score-delta-height);
+  min-width: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.scoreboard-finale .score-delta {
+  min-width: 0;
+  font-size: 10px;
+  line-height: var(--score-delta-height);
+  font-weight: 500;
+  white-space: nowrap;
+  color: #c5cdfa;
+}
+.scoreboard-finale.scoreboard-dense .score-delta {
+  font-size: 9px;
+}
+.scoreboard-finale .leader .score-delta {
+  color: #505125;
+}
+
+.final-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(18px, 2.5vw, 44px);
+  width: 100%;
+  max-width: 1680px;
+  min-height: 0;
+  text-align: left;
+}
+.final-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
+  align-items: flex-start;
+  gap: clamp(12px, 1.5svh, 20px);
+  min-width: 0;
+  padding: 0 clamp(0px, 1vw, 20px) 0 0;
+}
+.final-screen > .scoreboard-stage {
+  max-width: none;
+  margin: 0;
+  align-self: center;
+}
+.final-hero > .tag {
+  font-size: clamp(9px, 0.8vw, 12px);
+}
+.final-winner-heading {
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 2.5vw, 42px);
+  min-width: 0;
+  width: 100%;
+}
+.final-screen .winner-avatar {
+  flex-shrink: 0;
+  width: clamp(100px, 16svh, 180px);
+  height: clamp(100px, 16svh, 180px);
+  margin: 14px 0 14px 14px;
+}
+.final-screen .winner-avatar > .avatar {
+  width: 100%;
+  height: 100%;
+}
+.final-screen .winner-avatar > .star {
+  width: 145%;
+  height: 145%;
+  max-width: none;
+  top: -22%;
+  left: -22%;
+}
+.final-screen h1 {
+  min-width: 0;
+  font-size: clamp(38px, 4.4vw, 78px);
+  line-height: 1;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.final-screen h1 > span {
+  margin: 12px 0 0;
+  font-size: clamp(20px, 1.8vw, 32px);
+  line-height: 1.15;
+}
+.final-screen .winner-points {
+  font-size: clamp(13px, 1vw, 17px);
+}
+.winner-points strong {
+  font-family: var(--display);
+  font-size: clamp(38px, 4vw, 68px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--yellow);
+  margin-right: 6px;
+}
+.final-screen .tie-note {
+  margin: 5px 0 0;
+  font-size: 12px;
+}
+.final-tie {
+  position: relative;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.final-tie > summary,
+.final-recap > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  color: var(--paper);
+}
+.final-tie > p {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 12;
+  width: min(420px, 78vw);
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #ffffff70;
+  border-radius: 8px;
+  background: var(--ink);
+}
+.final-hero .awards {
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.final-hero .award {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 2px 8px;
+  padding: 8px;
+  min-width: 0;
+  text-align: left;
+  position: relative;
+}
+.final-hero .award > .icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 14px;
+  height: 14px;
+}
+.final-hero .award > span {
+  grid-column: 2;
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  padding-right: 18px;
+}
+.final-hero .award > .avatar {
+  grid-row: 1 / 4;
+  width: 24px;
+  height: 24px;
+}
+.final-hero .award > b {
+  font-size: clamp(13px, 1vw, 18px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.final-hero .award > small {
+  grid-column: 2;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #d7deff;
+}
+.final-crew {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.final-crew .avatar {
+  width: clamp(48px, 5vw, 80px);
+  height: auto;
+}
+.final-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #ffffff40;
+  position: relative;
+  z-index: 11;
+}
+.final-footer .final-actions {
+  justify-content: flex-start;
+  gap: 14px;
+  margin: 0;
+}
+.final-actions .button {
+  min-height: 50px;
+  padding: 14px 22px;
+}
+.final-recap {
+  margin-left: auto;
+  font-size: 13px;
+}
+.final-recap-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 12px);
+  width: min(680px, 85vw);
+  max-height: min(440px, 65svh);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 22px;
+  border: 1px solid #ffffff70;
+  border-radius: 10px;
+  background: #1736cb;
+  box-shadow: 0 12px 40px #191a2455;
+}
+.final-recap .session-stats {
+  margin: 0;
+  flex-wrap: wrap;
+}
+.final-recap .board-summary {
+  border: 0;
+  padding: 0;
+  margin: 22px 0 0;
+  text-align: center;
+}
+.final-recap .board-summary h2 {
+  font-size: 30px;
+}
+
+/* Keep the existing chrome in the height budget rather than covering the stage. */
+@media (min-width: 900px) and (min-height: 600px) {
+  .host-screen:is(.phase-final, .phase-intermission) {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+    padding-bottom: 0;
+  }
+  .host-screen:is(.phase-final, .phase-intermission) > .host-header,
+  .host-screen:is(.phase-final, .phase-intermission) > .connection-banner {
+    flex-shrink: 0;
+  }
+  .host-screen:is(.phase-final, .phase-intermission) > .host-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    padding: clamp(16px, 2.5svh, 28px) 4%;
+  }
+  .host-screen:is(.phase-final, .phase-intermission) > .host-toolbar {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phase-final .final-screen {
+    flex: 1;
+    margin: 0 auto;
+  }
+  .phase-intermission .intermission {
+    width: 100%;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(30px, 5vw, 80px);
+    align-items: center;
+  }
+  .phase-intermission .intermission h1 {
+    font-size: clamp(58px, 6.5vw, 100px);
+    margin: 20px 0;
+  }
+  .phase-intermission .intermission .timer {
+    width: 86px;
+    height: 86px;
+    margin-top: 20px;
+  }
+}
+@media (max-width: 899px), (max-height: 599px) {
+  .final-screen {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 28px;
+  }
+  .final-hero {
+    padding: 0;
+  }
+  .final-footer {
+    flex-wrap: wrap;
+  }
+  .final-footer .final-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .final-recap {
+    width: 100%;
+    margin: 0;
+  }
+  .final-recap-panel {
+    position: static;
+    width: 100%;
+    max-height: 60svh;
+    margin-top: 12px;
+    padding: 18px;
+  }
+  .scoreboard-stage .scoreboard-rows {
+    max-height: 520px;
+  }
+  .scoreboard-stage .score-row {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+  .scoreboard-stage .score-delta {
+    min-width: auto;
+  }
+  .scoreboard-finale {
+    --score-column: 80px;
+  }
+  .scoreboard-finale .score-row {
+    grid-template-columns: 24px 16px var(--standing-avatar) minmax(0, 1fr) var(
+        --score-column
+      );
+    column-gap: 6px;
+  }
+  .scoreboard-finale .movement {
+    font-size: 9px;
+  }
+  .phase-final .host-toolbar > button:nth-child(3) {
+    display: block;
+  }
+}

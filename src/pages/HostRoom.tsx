@@ -3,11 +3,12 @@ import { Link, useParams } from "react-router-dom";
 import { gameById, gameForRoom } from "../../shared/catalog";
 import { useParty } from "../lib/party";
 import { playSound } from "../lib/sound";
-import { Avatar, Confetti, Icon, Logo, Star, Tag } from "../components/Visuals";
-import { Awards, JoinQR, Scoreboard, Timer } from "../components/RoomParts";
+import { HostMusic, musicTrackFor } from "../lib/music";
+import { Avatar, Icon, Logo, Star, Tag } from "../components/Visuals";
+import { JoinQR, Scoreboard, Timer } from "../components/RoomParts";
 import { HostGallery } from "../components/HostGallery";
 import { ErrorMessage } from "../components/Layout";
-import { BoardSummary } from "../components/studio/BoardSummary";
+import { HostFinale } from "../components/HostFinale";
 import { RoundReveal } from "../components/RoundReveal";
 export function HostRoom() {
   const party = useParty(),
@@ -16,6 +17,27 @@ export function HostRoom() {
   const [drawer, setDrawer] = useState(false),
     [muted, setMuted] = useState(true),
     [ending, setEnding] = useState(false);
+  const music = useRef<HostMusic | null>(null);
+  const musicTrack =
+    room && room.code === code && party.identity?.role === "host"
+      ? musicTrackFor(room.phase, gameForRoom(room).id)
+      : null;
+  useEffect(() => {
+    const controller = new HostMusic();
+    music.current = controller;
+    return () => {
+      controller.dispose();
+      music.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    music.current?.setTrack(musicTrack);
+  }, [musicTrack]);
+  const toggleSound = useCallback(() => {
+    const nextMuted = !muted;
+    music.current?.setMuted(nextMuted);
+    setMuted(nextMuted);
+  }, [muted]);
   useEffect(() => {
     if (!ending) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -68,7 +90,9 @@ export function HostRoom() {
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
-        (e.target as HTMLElement).matches("input,textarea,select,button") ||
+        (e.target as HTMLElement).matches(
+          "input,textarea,select,button,summary",
+        ) ||
         e.ctrlKey ||
         e.metaKey
       )
@@ -79,12 +103,12 @@ export function HostRoom() {
       }
       if (e.key.toLowerCase() === "p") void party.action("pause");
       if (e.key.toLowerCase() === "f") fullscreen();
-      if (e.key.toLowerCase() === "m") setMuted((m) => !m);
+      if (e.key.toLowerCase() === "m") toggleSound();
       if (e.key.toLowerCase() === "h") setDrawer((d) => !d);
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [party, room?.phase, fullscreen]);
+  }, [party, room?.phase, fullscreen, toggleSound]);
   if (!room || room.code !== code || party.identity?.role !== "host")
     return (
       <div className="room-recovery">
@@ -107,7 +131,6 @@ export function HostRoom() {
     room.settings.playlist[room.gameIndex + 1] ?? game.id,
   );
   const sorted = [...room.players].sort((a, b) => b.score - a.score);
-  const winner = sorted[0];
   const answered = room.players.filter((p) =>
     room.phase === "voting" ? p.voted : p.submitted,
   ).length;
@@ -349,85 +372,15 @@ export function HostRoom() {
               </p>
               <Timer room={room} />
             </div>
-            <Scoreboard players={room.players} />
+            <Scoreboard players={room.players} stage />
           </div>
         )}
         {room.phase === "final" && (
-          <div className="final-screen">
-            <Confetti />
-            <Tag color="#f6ed51">
-              {room.board?.scoring === false
-                ? "STRONG OPINIONS. GREAT COMPANY."
-                : "OFFICIALLY THE PERSON TO BEAT."}
-            </Tag>
-            {room.board?.scoring === false && (
-              <>
-                <h1>Every opinion counted.</h1>
-                <p>A good room doesn’t need a winner.</p>
-                <div className="lobby-players">
-                  {room.players.map((p) => (
-                    <div className="lobby-player" key={p.id}>
-                      <Avatar id={p.avatar} size={64} />
-                      <b>{p.name}</b>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-            {winner && room.board?.scoring !== false && (
-              <>
-                <div className="winner-avatar">
-                  <Star />
-                  <Avatar id={winner.avatar} size={180} />
-                </div>
-                <h1>
-                  {winner.name}
-                  <span>made the most ruckus.</span>
-                </h1>
-                <p className="winner-points">
-                  {winner.score.toLocaleString()} points. Unlimited bragging
-                  rights.
-                  {sorted.filter((p) => p.score === winner.score).length >
-                    1 && (
-                    <span className="tie-note">
-                      {" "}
-                      A shared crown:{" "}
-                      {sorted
-                        .filter((p) => p.score === winner.score)
-                        .map((p) => p.name)
-                        .join(", ")}
-                      .
-                    </span>
-                  )}
-                </p>
-              </>
-            )}
-            {room.board?.scoring !== false && <Awards room={room} />}
-            <BoardSummary room={room} />
-            <div className="session-stats">
-              <span>
-                <b>{room.stats.rounds}</b> rounds
-              </span>
-              <span>
-                <b>{room.stats.answers}</b> submissions
-              </span>
-              <span>
-                <b>{room.stats.reactions}</b> reactions
-              </span>
-            </div>
-            <div className="final-actions">
-              <button
-                className="button yellow"
-                onClick={() => void party.action("rematch")}
-              >
-                Same crew. Rematch. <Icon name="arrow" />
-              </button>
-              <Link className="button light-outline" to="/host">
-                New lineup
-              </Link>
-            </div>
-            <Scoreboard players={room.players} />
-          </div>
+          <HostFinale
+            room={room}
+            standings={sorted}
+            onRematch={() => void party.action("rematch")}
+          />
         )}
         {room.phase === "ended" && (
           <div className="game-intro">
@@ -471,7 +424,7 @@ export function HostRoom() {
             </button>
           </>
         )}
-        <button onClick={() => setMuted((v) => !v)}>
+        <button onClick={toggleSound} aria-pressed={!muted}>
           {muted ? "Sound off" : "Sound on"} <kbd>M</kbd>
         </button>
         <button onClick={fullscreen}>

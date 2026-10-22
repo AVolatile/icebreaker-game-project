@@ -1,9 +1,17 @@
 import { CONTENT } from "../shared/content/library.js";
 import type { GameId, Prompt } from "../shared/types.js";
+import { TEAM_MEETING_PACK } from "../shared/content/packs.js";
+import {
+  TEAM_MEETING_CONTENT,
+  type PackPrompt,
+} from "./content/team-meeting.js";
 export interface Question extends Prompt {
   answer?: number;
   pack?: string;
 }
+const PACK_PROMPTS: Record<string, Record<GameId, PackPrompt[]>> = {
+  [TEAM_MEETING_PACK.id]: TEAM_MEETING_CONTENT,
+};
 const q = (
   title: string,
   options: string[],
@@ -378,6 +386,8 @@ export function getPrompt(
   pack: string,
   offset = 0,
 ): Question {
+  const packPool = PACK_PROMPTS[pack]?.[game];
+  if (packPool?.length) return packPool[(round + offset) % packPool.length];
   const pick = (items: Question[]) => {
     const filtered = items.filter((x) => x.pack === pack);
     const pool = filtered.length ? filtered : items;
@@ -562,6 +572,21 @@ export function botCreative(
   prompt: Question,
   index: number,
 ): string {
+  const contextual = PACK_PROMPTS[prompt.pack ?? ""]?.[game].find(
+    (item) => item.title === prompt.title && item.scene === prompt.scene,
+  )?.botResponses;
+  if (contextual?.length) {
+    const asides = [
+      "",
+      " Snacks not included.",
+      " No refunds.",
+      " Ask the mascot.",
+    ];
+    return `${contextual[index % contextual.length]}${asides[Math.floor(index / contextual.length) % asides.length]}`.slice(
+      0,
+      160,
+    );
+  }
   const rows = game === "sellout" ? BOT_PITCH_ROUNDS : BOT_CAPTION_ROUNDS;
   const round =
     game === "sellout"
