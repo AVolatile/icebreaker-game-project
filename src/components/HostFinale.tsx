@@ -1,3 +1,4 @@
+import { useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
 import type { Player, RoomView } from "../../shared/types";
 import { Awards, Scoreboard } from "./RoomParts";
@@ -8,11 +9,14 @@ export function HostFinale({
   room,
   standings,
   onRematch,
+  onPresented,
 }: {
   room: RoomView;
   standings: Player[];
   onRematch: () => void;
+  onPresented: (room: RoomView) => void;
 }) {
+  useLayoutEffect(() => onPresented(room), [onPresented, room]);
   const winner = standings[0];
   const scoring = room.board?.scoring !== false;
   const tied = standings.filter((p) => p.score === winner?.score);

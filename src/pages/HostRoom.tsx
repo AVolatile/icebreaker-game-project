@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gameById, gameForRoom } from "../../shared/catalog";
 import { useParty } from "../lib/party";
-import { playSound } from "../lib/sound";
-import { HostMusic, musicTrackFor } from "../lib/music";
+import { useHostAudio } from "../lib/useHostAudio";
 import { Avatar, Icon, Logo, Star, Tag } from "../components/Visuals";
 import { JoinQR, Scoreboard, Timer } from "../components/RoomParts";
 import { HostGallery } from "../components/HostGallery";
@@ -15,29 +14,13 @@ export function HostRoom() {
     { code } = useParams(),
     room = party.room;
   const [drawer, setDrawer] = useState(false),
-    [muted, setMuted] = useState(true),
     [ending, setEnding] = useState(false);
-  const music = useRef<HostMusic | null>(null);
-  const musicTrack =
-    room && room.code === code && party.identity?.role === "host"
-      ? musicTrackFor(room.phase, gameForRoom(room).id)
-      : null;
-  useEffect(() => {
-    const controller = new HostMusic();
-    music.current = controller;
-    return () => {
-      controller.dispose();
-      music.current = null;
-    };
-  }, []);
-  useEffect(() => {
-    music.current?.setTrack(musicTrack);
-  }, [musicTrack]);
-  const toggleSound = useCallback(() => {
-    const nextMuted = !muted;
-    music.current?.setMuted(nextMuted);
-    setMuted(nextMuted);
-  }, [muted]);
+  const hostRoom =
+    room && room.code === code && party.identity?.role === "host" ? room : null;
+  const { muted, toggleSound, onFinalePresented } = useHostAudio(
+    hostRoom,
+    party.connected,
+  );
   useEffect(() => {
     if (!ending) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -66,27 +49,11 @@ export function HostRoom() {
       previouslyFocused?.focus();
     };
   }, [ending]);
-  const previous = useRef({ phase: "", count: 0 });
   const fullscreen = useCallback(() => {
     if (document.fullscreenElement) void document.exitFullscreen();
     else
       void document.documentElement.requestFullscreen().catch(() => undefined);
   }, []);
-  useEffect(() => {
-    if (!room) return;
-    if (!muted) {
-      if (room.phase !== previous.current.phase)
-        playSound(
-          room.phase === "final"
-            ? "winner"
-            : room.phase === "results"
-              ? "reveal"
-              : "tick",
-        );
-      else if (room.players.length > previous.current.count) playSound("join");
-    }
-    previous.current = { phase: room.phase, count: room.players.length };
-  }, [room, muted]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
@@ -379,6 +346,7 @@ export function HostRoom() {
           <HostFinale
             room={room}
             standings={sorted}
+            onPresented={onFinalePresented}
             onRematch={() => void party.action("rematch")}
           />
         )}
