@@ -103,35 +103,66 @@ export function JoinQR({ url, code }: { url: string; code: string }) {
 export function Scoreboard({
   players,
   compact = false,
+  stage = false,
+  finale = false,
 }: {
   players: Player[];
   compact?: boolean;
+  stage?: boolean;
+  finale?: boolean;
 }) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   return (
-    <div className={`scoreboard ${compact ? "compact" : ""}`}>
+    <div
+      className={`scoreboard ${compact ? "compact" : ""} ${stage ? "scoreboard-stage" : ""} ${stage && players.length > 5 ? "scoreboard-dense" : ""} ${finale ? "scoreboard-finale" : ""}`}
+    >
       <div className="scoreboard-heading">
         <span>THE PECKING ORDER</span>
         <span>POINTS</span>
       </div>
-      {sorted.map((p, i) => (
-        <div className={`score-row ${i === 0 ? "leader" : ""}`} key={p.id}>
-          <span className="score-rank">{String(i + 1).padStart(2, "0")}</span>
-          <Avatar id={p.avatar} size={compact ? 38 : 55} />
-          <span className="score-name">
-            {p.name}
-            {p.bot && <small>DEMO</small>}
-          </span>
-          {p.movement !== 0 && (
-            <span className={`movement ${p.movement > 0 ? "up" : ""}`}>
-              {p.movement > 0 ? "↑" : "↓"}
-              {Math.abs(p.movement)}
+      <div
+        className="scoreboard-rows"
+        role={stage ? "region" : undefined}
+        aria-label={stage ? "Pecking Order standings" : undefined}
+        tabIndex={stage && players.length > 10 ? 0 : undefined}
+      >
+        {sorted.map((p, i) => (
+          <div className={`score-row ${i === 0 ? "leader" : ""}`} key={p.id}>
+            <span className="score-rank">{String(i + 1).padStart(2, "0")}</span>
+            <Avatar id={p.avatar} size={compact ? 38 : 55} />
+            <span className="score-name">
+              {p.name}
+              {p.bot && <small>DEMO</small>}
             </span>
-          )}
-          <span className="score-number">{p.score.toLocaleString()}</span>
-          {p.delta > 0 && <span className="score-delta">+{p.delta}</span>}
-        </div>
-      ))}
+            {p.movement !== 0 && (
+              <span className={`movement ${p.movement > 0 ? "up" : ""}`}>
+                {p.movement > 0 ? "↑" : "↓"}
+                {Math.abs(p.movement)}
+              </span>
+            )}
+            {finale ? (
+              <span className="score-points">
+                <span className="score-number">{p.score.toLocaleString()}</span>
+                {p.delta > 0 && (
+                  <span className="score-delta">
+                    +{p.delta.toLocaleString()} this round
+                  </span>
+                )}
+              </span>
+            ) : (
+              <>
+                <span className="score-number">{p.score.toLocaleString()}</span>
+                {p.delta > 0 && <span className="score-delta">+{p.delta}</span>}
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+      {stage && players.length > 10 && (
+        <p className="scoreboard-hint">
+          {players.length} players · scroll for the full pecking order
+        </p>
+      )}
     </div>
   );
 }

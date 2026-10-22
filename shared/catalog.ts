@@ -1,4 +1,5 @@
 import { TOPICS } from "./content/topics.js";
+import { TEAM_MEETING_PACK } from "./content/packs.js";
 import type { GameInfo, Settings } from "./types.js";
 export const GAMES: GameInfo[] = [
   {
@@ -104,6 +105,7 @@ export const PACKS = [
   { id: "weird", name: "Strangely true" },
   { id: "internet", name: "Browser history" },
   { id: "screen", name: "Screen time" },
+  TEAM_MEETING_PACK,
 ];
 export const AVATAR_NAMES = [
   "Orbit",

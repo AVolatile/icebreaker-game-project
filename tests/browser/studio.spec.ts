@@ -15,6 +15,7 @@ test("Studio: create, validation, autosave, reorder, preview, JSON/CSV, duplicat
   await page
     .getByRole("button", { name: "Create question board", exact: true })
     .click();
+  await expect(page).toHaveURL(/\/studio\/boards\/[a-f0-9-]{36}$/);
   await page.getByRole("button", { name: "Play this board" }).click();
   await expect(
     page.getByText("Give your board a title.", { exact: true }),
@@ -133,6 +134,7 @@ test("Studio: create, validation, autosave, reorder, preview, JSON/CSV, duplicat
     timeout: 30000,
   });
   await page.getByRole("button", { name: "Next →" }).click();
+  await page.locator(".final-recap summary").click();
   await expect(page.getByText("The room, by the numbers.")).toBeVisible();
   await context.close();
   function assertNoSockets() {

@@ -1,4 +1,4 @@
-import { TOPICS } from "../shared/content/library.js";
+import { PACKS } from "../shared/catalog.js";
 import { z } from "zod";
 import { GAME_IDS } from "../shared/types.js";
 export const settingsSchema = z.object({
@@ -8,8 +8,7 @@ export const settingsSchema = z.object({
   pack: z
     .string()
     .refine(
-      (value) =>
-        value === "mixed" || value === "work" || Object.hasOwn(TOPICS, value),
+      (value) => PACKS.some((pack) => pack.id === value),
       "Choose a supported content pack.",
     ),
   lateJoins: z.boolean(),
