@@ -24,6 +24,9 @@ class FakeAudio {
   pause() {
     this.paused = true;
   }
+  getAttribute() {
+    return this.src || null;
+  }
   removeAttribute() {
     this.src = "";
   }
@@ -162,4 +165,59 @@ test("blocked, rejected and unavailable audio are safe and can retry on a later 
     unavailable.setTrack("intro");
     unavailable.dispose();
   });
+});
+
+test("ducking preserves playback position; explicit restart rewinds and one-shot beds do not loop", async (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setInterval"] });
+  const { music, audio, allocations } = controller();
+  t.after(() => music.dispose());
+  music.setTrack("hotwire");
+  music.setMuted(false);
+  await Promise.resolve();
+  t.mock.timers.tick(200);
+  audio.currentTime = 12;
+  music.setVolume(0.025, 60);
+  t.mock.timers.tick(60);
+  assert.equal(audio.volume, 0.025);
+  assert.equal(audio.currentTime, 12);
+  assert.equal(audio.plays.length, 1);
+  music.setVolume(0.18);
+  t.mock.timers.tick(180);
+  assert.equal(audio.volume, 0.18);
+  music.setTrack("hotwire", { restart: true });
+  assert.equal(audio.currentTime, 0);
+  assert.equal(audio.plays.length, 2);
+  music.setTrack("results", { loop: false });
+  assert.equal(audio.loop, false);
+  music.setTrack("finale");
+  assert.equal(audio.loop, true);
+  assert.equal(allocations(), 1);
+});
+
+test("source fades finish before starting the next track and survive volume changes or mute gestures", async (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setInterval"] });
+  const { music, audio } = controller();
+  t.after(() => music.dispose());
+  music.setTrack("finale");
+  music.setMuted(false);
+  await Promise.resolve();
+  t.mock.timers.tick(200);
+  music.setTrack("lobby", { fadeOutMs: 180 });
+  music.setVolume(0.14); // Must not cancel the pending source switch.
+  assert.equal(audio.src, MUSIC_TRACKS.finale);
+  t.mock.timers.tick(90);
+  assert.ok(audio.volume > 0 && audio.volume < 0.18);
+  t.mock.timers.tick(90);
+  assert.equal(audio.src, MUSIC_TRACKS.lobby);
+  assert.equal(audio.volume, 0);
+  await Promise.resolve();
+  t.mock.timers.tick(180);
+  assert.equal(audio.volume, 0.14);
+  music.setTrack(null, { fadeOutMs: 120 });
+  music.setMuted(true);
+  music.setTrack("hotwire");
+  music.setMuted(false);
+  t.mock.timers.tick(1000);
+  assert.equal(audio.src, MUSIC_TRACKS.hotwire);
+  assert.equal(audio.paused, false);
 });

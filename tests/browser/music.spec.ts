@@ -14,7 +14,14 @@ declare global {
   interface Window {
     hostMusicProbe: {
       elements: HTMLAudioElement[];
-      plays: { src: string; gesture: boolean }[];
+      plays: {
+        src: string;
+        gesture: boolean;
+        time: number;
+        finaleVisible: boolean;
+      }[];
+      sockets: WebSocket[];
+      activeVoices: number;
       oscillators: number;
     };
   }
@@ -27,7 +34,14 @@ async function probe(
   await page.addInitScript((mode) => {
     const probe = (window.hostMusicProbe = {
       elements: [] as HTMLAudioElement[],
-      plays: [] as { src: string; gesture: boolean }[],
+      plays: [] as {
+        src: string;
+        gesture: boolean;
+        time: number;
+        finaleVisible: boolean;
+      }[],
+      sockets: [] as WebSocket[],
+      activeVoices: 0,
       oscillators: 0,
     });
     const NativeAudio = window.Audio;
@@ -41,6 +55,10 @@ async function probe(
         probe.plays.push({
           src: this.src,
           gesture: navigator.userActivation.isActive,
+          time: this.currentTime,
+          finaleVisible:
+            !!document.querySelector(".final-screen .confetti") &&
+            !!document.querySelector(".final-hero h1"),
         });
         if (mode === "blocked")
           return Promise.reject(
@@ -49,10 +67,22 @@ async function probe(
         return super.play();
       }
     };
+    const NativeWebSocket = window.WebSocket;
+    window.WebSocket = class extends NativeWebSocket {
+      constructor(url: string | URL, protocols?: string | string[]) {
+        super(url, protocols);
+        probe.sockets.push(this);
+      }
+    };
     const createOscillator = AudioContext.prototype.createOscillator;
     AudioContext.prototype.createOscillator = function () {
       probe.oscillators++;
-      return createOscillator.call(this);
+      const oscillator = createOscillator.call(this);
+      probe.activeVoices++;
+      oscillator.addEventListener("ended", () => probe.activeVoices--, {
+        once: true,
+      });
+      return oscillator;
     };
   }, mode);
 }
@@ -66,6 +96,7 @@ async function snapshot(page: Page) {
       plays: probe.plays.length,
       firstGesture: probe.plays[0]?.gesture,
       oscillators: probe.oscillators,
+      activeVoices: probe.activeVoices,
       src: audio?.getAttribute("src") ?? null,
       paused: audio?.paused,
       time: audio?.currentTime ?? 0,
@@ -85,16 +116,16 @@ async function playing(page: Page, track: MusicTrack) {
     .toBeGreaterThan(0.05);
   await expect
     .poll(async () => (await snapshot(page)).volume)
-    .toBeCloseTo(0.18);
+    .toBeCloseTo(track === "results" ? 0.12 : 0.18);
   expect(await snapshot(page)).toMatchObject({
     count: 1,
     paused: false,
-    loop: true,
+    loop: track !== "intro" && track !== "results",
     error: null,
   });
 }
 
-async function roomSession(playlist: GameId[] = ["hotwire"]) {
+async function roomSession(playlist: GameId[] = ["hotwire"], rounds = 1) {
   const sockets: Socket[] = [];
   async function client() {
     const socket = io("http://localhost:4310", {
@@ -116,7 +147,7 @@ async function roomSession(playlist: GameId[] = ["hotwire"]) {
         settings: {
           ...DEFAULT_SETTINGS,
           playlist,
-          rounds: 1,
+          rounds,
           pace: "relaxed",
           autoAdvance: false,
         },
@@ -358,3 +389,105 @@ for (const mode of ["blocked", "unavailable"] as const) {
     }
   });
 }
+
+test("question pacing, result silence, mute cancellation, live reconnect and confetti-aligned finale", async ({
+  page,
+}) => {
+  test.setTimeout(60000);
+  const session = await roomSession(["hotwire"], 2);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  try {
+    await probe(page);
+    await openHost(page, session);
+    await page.getByRole("button", { name: "Sound off M" }).click();
+    await playing(page, "lobby");
+    await session.action("start");
+    await playing(page, "intro");
+    await session.action("next");
+    await playing(page, "hotwire");
+
+    // Actual websocket interruption: retain the host view, then hydrate a fresh one.
+    async function reconnect(phase: "active" | "final") {
+      const before = await snapshot(page);
+      await page.context().setOffline(true);
+      await page.evaluate(() =>
+        window.hostMusicProbe.sockets
+          .filter((socket) => socket.url.includes("/socket.io/"))
+          .forEach((socket) => socket.close()),
+      );
+      await expect(
+        page.getByText("Connection dropped. Reconnecting to your room…"),
+      ).toBeVisible();
+      await expect.poll(async () => (await snapshot(page)).paused).toBe(true);
+      await page.context().setOffline(false);
+      await expect(page.locator(`.host-screen.phase-${phase}`)).toBeVisible();
+      await expect(
+        page.getByText("Connection dropped. Reconnecting to your room…"),
+      ).toHaveCount(0);
+      await playing(page, phase === "final" ? "finale" : "hotwire");
+      expect((await snapshot(page)).oscillators).toBe(before.oscillators);
+    }
+    await reconnect("active");
+
+    await session.action("next");
+    await expect(page.locator(".round-reveal")).toBeVisible();
+    // Mute before the delayed reveal: scheduled voices and later cues must die.
+    await page.getByRole("button", { name: "Sound on M" }).click();
+    const afterMute = await snapshot(page);
+    await expect.poll(async () => (await snapshot(page)).activeVoices).toBe(0);
+    await page.getByRole("button", { name: "Sound off M" }).click();
+    await playing(page, "results");
+    expect((await snapshot(page)).oscillators).toBe(afterMute.oscillators);
+    await expect
+      .poll(async () => (await snapshot(page)).src, { timeout: 5000 })
+      .toBe(null);
+    expect((await snapshot(page)).paused).toBe(true);
+
+    // Same game/track, a new real question: one restart after the audio breath.
+    const beforeQuestion = await snapshot(page);
+    await session.action("next");
+    await expect(page.locator(".host-screen.phase-active")).toBeVisible();
+    await playing(page, "hotwire");
+    const nextQuestion = await snapshot(page);
+    expect(nextQuestion.plays).toBe(beforeQuestion.plays + 1);
+    expect(nextQuestion.oscillators).toBe(beforeQuestion.oscillators + 3);
+    await session.action("lock"); // Join-lock is unrelated to answers.
+    expect((await snapshot(page)).plays).toBe(nextQuestion.plays);
+    expect((await snapshot(page)).oscillators).toBe(nextQuestion.oscillators);
+    await page.getByRole("button", { name: "Sound on M" }).click();
+    await page.getByRole("button", { name: "Sound off M" }).click();
+    await playing(page, "hotwire");
+    expect((await snapshot(page)).oscillators).toBe(nextQuestion.oscillators);
+
+    await session.action("next");
+    await playing(page, "results");
+    await expect
+      .poll(async () => (await snapshot(page)).src, { timeout: 5000 })
+      .toBe(null);
+    await session.action("next");
+    await expect(page.locator(".final-screen .confetti")).toBeAttached();
+    await playing(page, "finale");
+    const finalePlay = await page.evaluate(() =>
+      window.hostMusicProbe.plays.at(-1),
+    );
+    expect(finalePlay).toMatchObject({ finaleVisible: true, time: 0 });
+    const finale = await snapshot(page);
+    await session.action("lock");
+    expect((await snapshot(page)).plays).toBe(finale.plays);
+    expect((await snapshot(page)).oscillators).toBe(finale.oscillators);
+    expect((await snapshot(page)).time).toBeGreaterThan(finale.time);
+    await reconnect("final");
+    const reconnected = await snapshot(page);
+    await page.getByRole("button", { name: "Sound on M" }).click();
+    await page.getByRole("button", { name: "Sound off M" }).click();
+    await playing(page, "finale");
+    expect((await snapshot(page)).oscillators).toBe(reconnected.oscillators);
+    await page.getByRole("button", { name: "Same crew. Rematch." }).click();
+    await playing(page, "lobby");
+    expect(errors).toEqual([]);
+  } finally {
+    await page.context().setOffline(false);
+    await session.close();
+  }
+});
